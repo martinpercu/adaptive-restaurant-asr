@@ -74,12 +74,17 @@ def _demand_clips(
     cfg: dict, staging: Path, clip_len: int, hop: int, min_len: int, eval_frac: float
 ) -> list[Clip]:
     stream = _demand_stream(staging, cfg["env"], cfg.get("channel", 1))
+    tag = cfg["env"]
+    if cfg.get("range_s"):  # restrict to a time range so subtypes from one recording differ
+        lo, hi = cfg["range_s"]
+        stream = stream[int(lo * SR) : int(hi * SR)]
+        tag = f"{cfg['env']}@{int(lo)}-{int(hi)}"
     split_at = int(len(stream) * (1 - eval_frac))
     clips: list[Clip] = []
     for arr in _cut(stream[:split_at], clip_len, hop, min_len):
-        clips.append(Clip(arr, f"{cfg['env']}-train", "train"))
+        clips.append(Clip(arr, f"{tag}-train", "train"))
     for arr in _cut(stream[split_at:], clip_len, hop, min_len):
-        clips.append(Clip(arr, f"{cfg['env']}-eval", "eval"))
+        clips.append(Clip(arr, f"{tag}-eval", "eval"))
     return clips
 
 

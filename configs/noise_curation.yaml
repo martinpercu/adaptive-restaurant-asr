@@ -9,17 +9,17 @@ min_train: 10
 min_eval: 4
 
 subtypes:
-  AA:  # dishes-cutlery — DKITCHEN transient clatter (later half of the recording)
+  AA:  # dishes-cutlery — DKITCHEN, first half (approximate clatter-heavy range)
     kind: demand
     env: DKITCHEN
     channel: 1
-    block_split: true          # single recording -> split by time block (train early, eval late)
+    range_s: [0, 150]          # distinct time range from AB (no shared audio)
     license: CC-BY-SA-3.0
-  AB:  # fryer-extractor — DKITCHEN stationary hum/sizzle (same recording, block split)
+  AB:  # fryer-extractor — DKITCHEN, second half (approximate stationary hum range)
     kind: demand
     env: DKITCHEN
     channel: 1
-    block_split: true
+    range_s: [150, 300]
     license: CC-BY-SA-3.0
   AC:  # kitchen-babble proxy — OMEETING multi-speaker
     kind: demand

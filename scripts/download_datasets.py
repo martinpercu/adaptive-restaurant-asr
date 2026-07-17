@@ -146,14 +146,24 @@ def _sha256(path: Path) -> str:
 
 
 def download_file(url: str, dest: Path, sha256: str | None = None) -> Path:
+    """Download with resume: a partial `.part` is continued via HTTP Range (survives
+    interruptions on large archives). Servers that ignore Range restart cleanly."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and (sha256 is None or _sha256(dest) == sha256):
         print(f"  cached: {dest.name}")
         return dest
-    print(f"  downloading: {url}")
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(url) as resp, tmp.open("wb") as out:  # noqa: S310
-        shutil.copyfileobj(resp, out)
+    existing = tmp.stat().st_size if tmp.exists() else 0
+    req = urllib.request.Request(url)  # noqa: S310
+    if existing:
+        req.add_header("Range", f"bytes={existing}-")
+        print(f"  resuming: {url} (from {existing / 1e6:.0f} MB)")
+    else:
+        print(f"  downloading: {url}")
+    with urllib.request.urlopen(req) as resp:  # noqa: S310
+        mode = "ab" if (existing and resp.status == 206) else "wb"
+        with tmp.open(mode) as out:
+            shutil.copyfileobj(resp, out)
     if sha256 is not None and _sha256(tmp) != sha256:
         tmp.unlink(missing_ok=True)
         raise ValueError(f"checksum mismatch for {url}")
