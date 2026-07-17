@@ -36,15 +36,17 @@ SEQ_OFFSET = 50000  # keep TTS ids clear of downloaded clean-speech ids
 
 # Piper voices per language, most-preferred first (locale -> accent tag).
 VOICES: dict[str, list[tuple[str, str]]] = {
+    # LatAm-first for Spanish (plan/phases/phase-0 §0.6); en_US for English.
+    # Names verified against the rhasspy/piper-voices catalog.
     "es": [
-        ("es_MX-claude-medium", "es-mx"),
-        ("es_ES-davefx-medium", "es-es"),
+        ("es_MX-claude-high", "es-mx"),
+        ("es_MX-ald-medium", "es-mx"),
         ("es_AR-daniela-high", "es-ar"),
     ],
     "en": [
         ("en_US-amy-medium", "en-us"),
-        ("en_US-ryan-medium", "en-us"),
-        ("en_GB-alan-medium", "en-gb"),
+        ("en_US-ryan-high", "en-us"),
+        ("en_US-lessac-medium", "en-us"),
     ],
 }
 

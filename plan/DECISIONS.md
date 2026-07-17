@@ -20,6 +20,18 @@ Format:
 - **Why:** 3.12 has stable wheels for the whole core stack; deferring the heavy ML groups keeps CI fast and matches phase ordering (their deps land when their phase does). No gate depends on the deferred groups in phase 0.
 - **Impact:** `pyproject.toml`, `Makefile`, `.python-version`, CI workflow. Revisit the upper Python bound when 3.13 wheels for torch/ctranslate2 are broadly available.
 
+## 2026-07-17 — Phase 0 noise bootstrap: MUSAN + UrbanSound8K deferred to phase 2 (disk limit)
+- **Context:** task 0.5 stages DEMAND + MUSAN + UrbanSound8K raw noise. The build host has only ~22 GiB free; MUSAN (~11 GB archive, similar extracted) and UrbanSound8K (~6 GB) together would overflow the disk mid-download. The phase-0 **gate does not test noise** (noise-bank manifests are a phase-2 deliverable; phase-0 acceptance test 4 only validates speech/TTS manifests).
+- **Decision:** phase-0 `download-data` ingests the full speech corpora (OpenSLR es ×6 balanced ~0.5 h/accent, LibriSpeech ~2.5 h) plus **DEMAND** (small 16 kHz zips — real kitchen/cafeteria noise, covers subtypes AA/AB/CA). MUSAN (babble AC/CA, music CB) and UrbanSound8K (outdoor BA/BB/BC) are deferred to phase 2, to be fetched when curating the noise bank — as a subset or after freeing disk. Zenodo/OpenSLR URLs verified reachable.
+- **Why:** unblocks phase 0 (gate is speech/TTS-only) without risking a disk-full failure; the large outdoor/babble corpora land exactly when phase 2 needs them. Drive-thru outdoor coverage (family B) is the phase-2 priority and will require UrbanSound8K + composite BC clips then.
+- **Impact:** phase-0 download run scope; phase-2 curation must (re)fetch MUSAN + UrbanSound8K. No phase-0 gate affected. Downloaders for all sources remain in `scripts/download_datasets.py`.
+
+## 2026-07-17 — `torch` promoted to a core dependency
+- **Context:** the plan lists `torchaudio` in the core group as the sanctioned transforms/resampler (01 §1). `torchaudio` 2.11 ships with **no** declared `torch` dependency, so `uv sync` installed torchaudio alone; resampling 48 kHz OpenSLR/LibriSpeech audio to the canonical 16 kHz then failed with `ModuleNotFoundError: No module named 'torch'`.
+- **Decision:** add `torch>=2.2,<3` explicitly to core `dependencies` (removed the now-redundant copy from the `train` group). No resampler substitution — soundfile for I/O, torchaudio for transforms, exactly as 01 §1 mandates.
+- **Why:** torch is torchaudio's runtime engine; making the transitive dependency explicit is required for the ingest conversion path to work. Heavier `make setup`, but unavoidable for the mandated audio stack.
+- **Impact:** `pyproject.toml` core + train groups; `scripts/audio_io.py` resample path.
+
 ## 2026-07-17 — Judge made provider-pluggable (adds OpenAI gpt-4o-mini / gpt-4.1-nano)
 - **Context:** the product owner wants OpenAI's `gpt-4.1-nano` and `gpt-4o-mini` available as judge models alongside `claude-sonnet-5`; `OPENAI_API_KEY` supplied via `.env`.
 - **Decision:** `JudgeClient` becomes a config-selected interface with per-provider implementations; structured outputs enforced on both providers; batch APIs for the weekly cycle; a **calibration gate** (≥ 90% verdict agreement vs `claude-sonnet-5` on ≥ 100 labeled items) before any cheaper model becomes the production judge; `.env` added to the phase-0 gitignore spec plus a committed `.env.example`; `openai` added to the `flywheel` dependency group.

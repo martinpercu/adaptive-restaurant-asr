@@ -62,7 +62,8 @@ def test_dataset_manifests_valid(repo_root):
         df = pd.read_parquet(manifest)
         assert len(df) > 0, f"empty manifest: {manifest}"
         for rec in df.to_dict(orient="records"):
-            rec["keywords"] = list(rec.get("keywords") or [])
+            kw = rec.get("keywords")
+            rec["keywords"] = list(kw) if kw is not None else []
             row = DatasetManifestRow.model_validate(rec)
             assert row.lang in {"es", "en"}
             assert (manifest.parent / row.path).exists(), f"missing audio: {row.path}"
@@ -82,7 +83,7 @@ def test_tts_corpus_manifest(repo_root):
         df = pd.read_parquet(manifest)
         assert len(df) >= 500, f"{lang}: expected >=500 utts, got {len(df)}"
 
-        covered = {kw for kws in df["keywords"] for kw in (kws or [])}
+        covered = {kw for kws in df["keywords"] if kws is not None for kw in kws}
         targets = {c["target"] for c in confusion[lang]}
         assert not (targets - covered), f"{lang}: uncovered targets {sorted(targets - covered)}"
 
