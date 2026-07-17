@@ -152,32 +152,27 @@ def _analysis_md(ndi: dict, matrix: pd.DataFrame, warns: list[str], run_id: str)
     return "\n".join(lines) + "\n"
 
 
-def run_sensitivity(
-    engine: AsrEngine,
-    settings: Settings,
-    model_version: str,
-    langs=("es", "en"),
-    levels=("05", "10", "15"),
-    limit=None,
+def _weights(settings: Settings) -> dict:
+    w = settings.eval.ndi_weights.model_dump()
+    return {"d_wer": w["d_wer"], "d_ker": w["d_ker"], "hallucination": w["hallucination"]}
+
+
+def transcribe_lang(
+    engine: AsrEngine, settings: Settings, lang: str, model_version: str, limit=None
+) -> pd.DataFrame:
+    """Heavy step for one language: transcribe its eval-matrix -> per-cell matrix rows."""
+    manifest = (
+        Path(settings.paths.data) / "datasets" / f"eval-matrix-{lang}-v1" / "manifest.parquet"
+    )
+    groups = evaluate_matrix(engine, manifest, settings.asr.guard, limit)
+    return build_matrix(groups, model_version)
+
+
+def write_report(
+    matrix: pd.DataFrame, settings: Settings, model_version: str, levels=("05", "10", "15")
 ) -> Path:
-    data = Path(settings.paths.data)
-    groups: dict[tuple, list[UttRecord]] = {}
-    for lang in langs:
-        manifest = data / "datasets" / f"eval-matrix-{lang}-v1" / "manifest.parquet"
-        if not manifest.exists():
-            print(f"  skip {lang}: {manifest} missing")
-            continue
-        groups.update(evaluate_matrix(engine, manifest, settings.asr.guard, limit))
-
-    matrix = build_matrix(groups, model_version)
-    weights = settings.eval.ndi_weights.model_dump()
-    weights = {
-        "d_wer": weights["d_wer"],
-        "d_ker": weights["d_ker"],
-        "hallucination": weights["hallucination"],
-    }
-    ndi_body = compute_ndi(matrix, weights, tuple(levels))
-
+    """Light step: NDI + heatmaps + ANALYSIS from an already-computed matrix."""
+    ndi_body = compute_ndi(matrix, _weights(settings), tuple(levels))
     run_id = _run_id(model_version)
     out_dir = Path(settings.paths.reports) / "sensitivity" / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -199,31 +194,67 @@ def run_sensitivity(
     return out_dir
 
 
+def run_sensitivity(
+    engine: AsrEngine,
+    settings: Settings,
+    model_version: str,
+    langs=("es", "en"),
+    levels=("05", "10", "15"),
+    limit=None,
+) -> Path:
+    """All-in-one (small runs/tests). For large corpora use the staged CLI."""
+    frames = []
+    for lang in langs:
+        manifest = (
+            Path(settings.paths.data) / "datasets" / f"eval-matrix-{lang}-v1" / "manifest.parquet"
+        )
+        if not manifest.exists():
+            print(f"  skip {lang}: {manifest} missing")
+            continue
+        frames.append(transcribe_lang(engine, settings, lang, model_version, limit))
+    return write_report(pd.concat(frames, ignore_index=True), settings, model_version, levels)
+
+
+def _engine_for(settings: Settings, model_version: str | None):
+    from ars.asr.engine import WhisperEngine  # noqa: PLC0415
+    from ars.registry import ModelRegistry  # noqa: PLC0415
+
+    reg = ModelRegistry.load(Path(settings.paths.models) / "registry.json")
+    prod = reg.get(model_version) if model_version else reg.production()
+    size = settings.asr.model_size
+    if prod and prod.base_model.startswith("whisper-"):
+        size = prod.base_model[len("whisper-") :]
+    version = model_version or (prod.version if prod else "unknown")
+    return WhisperEngine(settings.asr, model=size), version
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="ARS noise sensitivity + NDI")
     parser.add_argument("--config", default="configs/default.yaml")
     parser.add_argument("--model-version", default=None)
     parser.add_argument("--langs", nargs="+", default=["es", "en"], choices=["es", "en"])
     parser.add_argument("--limit", type=int, default=None)
+    # Staged execution keeps each per-language transcription within time limits:
+    parser.add_argument("--stage", choices=["all", "transcribe", "report"], default="all")
+    parser.add_argument("--matrix-out", default=None, help="transcribe stage: write matrix here")
+    parser.add_argument("--matrices", nargs="+", default=None, help="report stage: matrix inputs")
     args = parser.parse_args(argv)
-
     settings = Settings.load(args.config)
-    from ars.asr.engine import WhisperEngine  # noqa: PLC0415
-    from ars.registry import ModelRegistry  # noqa: PLC0415
 
-    reg = ModelRegistry.load(Path(settings.paths.models) / "registry.json")
-    prod = reg.get(args.model_version) if args.model_version else reg.production()
-    size = settings.asr.model_size
-    if prod and prod.base_model.startswith("whisper-"):
-        size = prod.base_model[len("whisper-") :]
-    engine = WhisperEngine(settings.asr, model=size)
-    run_sensitivity(
-        engine,
-        settings,
-        model_version=args.model_version or (prod.version if prod else "unknown"),
-        langs=tuple(args.langs),
-        limit=args.limit,
-    )
+    if args.stage == "report":
+        matrix = pd.concat([pd.read_parquet(m) for m in args.matrices], ignore_index=True)
+        mv = matrix["model_version"].iloc[0] if "model_version" in matrix else args.model_version
+        write_report(matrix, settings, mv)
+        return 0
+
+    engine, version = _engine_for(settings, args.model_version)
+    if args.stage == "transcribe":
+        matrix = transcribe_lang(engine, settings, args.langs[0], version, args.limit)
+        matrix.to_parquet(args.matrix_out, index=False)
+        print(f"[{args.langs[0]}] matrix -> {args.matrix_out} ({len(matrix)} cells)")
+        return 0
+
+    run_sensitivity(engine, settings, version, langs=tuple(args.langs), limit=args.limit)
     return 0
 
 
