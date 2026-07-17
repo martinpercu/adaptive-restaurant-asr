@@ -1,0 +1,49 @@
+# Noise-bank curation map (plan/phases/phase-2 §2.1). Reproducible: curate.py reads this.
+# Sources: DEMAND (already staged) + UrbanSound8K (outdoor). MUSAN-only subtypes
+# (CB music) are deferred -> see DECISIONS; the canonical matrix runs over these 7.
+# clip_len_s / hop_s control segmentation; split is by SOURCE RECORDING (leakage guard).
+clip_len_s: 12.0
+hop_s: 10.0
+eval_frac: 0.3           # fraction of recordings (or time-blocks) held out for eval
+min_train: 10
+min_eval: 4
+
+subtypes:
+  AA:  # dishes-cutlery — DKITCHEN transient clatter (later half of the recording)
+    kind: demand
+    env: DKITCHEN
+    channel: 1
+    block_split: true          # single recording -> split by time block (train early, eval late)
+    license: CC-BY-SA-3.0
+  AB:  # fryer-extractor — DKITCHEN stationary hum/sizzle (same recording, block split)
+    kind: demand
+    env: DKITCHEN
+    channel: 1
+    block_split: true
+    license: CC-BY-SA-3.0
+  AC:  # kitchen-babble proxy — OMEETING multi-speaker
+    kind: demand
+    env: OMEETING
+    channel: 1
+    block_split: true
+    license: CC-BY-SA-3.0
+  CA:  # dining-babble — PCAFETER cafeteria
+    kind: demand
+    env: PCAFETER
+    channel: 1
+    block_split: true
+    license: CC-BY-SA-3.0
+  BA:  # drive-thru-traffic — UrbanSound8K engine idling (+ street proxy from TMETRO)
+    kind: urbansound8k
+    classes: [engine_idling]
+    license: CC-BY-NC-3.0
+  BB:  # construction — UrbanSound8K jackhammer + drilling
+    kind: urbansound8k
+    classes: [jackhammer, drilling]
+    license: CC-BY-NC-3.0
+  BC:  # car-cabin — composite: DEMAND meeting speech over US8K engine bed
+    kind: composite
+    speech: {kind: demand, env: OMEETING, channel: 1}
+    bed: {kind: urbansound8k, classes: [engine_idling]}
+    rel_db: -3.0             # speech ~3 dB below the engine bed (sparse passenger voices)
+    license: CC-BY-NC-3.0    # inherits the most restrictive component (US8K)
