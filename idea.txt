@@ -1,0 +1,122 @@
+El entorno de un restaurante es uno de los mayores desafíos para un sistema de ASR. No te enfrentas solo a un problema de volumen, sino a dos tipos de ruido críticamente distintos: el ruido estacionario/ambiental (extractor de cocina, motores del automac, tintineo de cubiertos) y el ruido de balbuceo o babble noise (otras personas hablando de fondo). Este último es el más peligroso, porque para el modelo es difícil distinguir cuál es la voz del cliente y cuál la del fondo.Para que este sistema funcione y no se degrade con el tiempo, necesitas enfocarlo no como un "proyecto de entrenamiento único", sino como un Data Flywheel (un volante de inercia de datos): un pipeline continuo donde el software e infraestructura alimentan al modelo, y el modelo refina al software.
+
+------------------
+
+El Pipeline de Mejora Continua (El Motor)El núcleo de tu éxito está en cómo orquestas el flujo de datos. No subestimes la fase de preparación; en entornos ruidosos, el preprocesamiento de audio define el 80% del resultado.
+
+1.Captura e Ingesta de Datos Raw:Fase de Producción.Captura audios reales del entorno (automac/sala). Almacénalos en formato raw (PCM de 16kHz mono es el estándar para Whisper) junto con metadatos del contexto: hora del día, nivel de ganancia del micrófono y si es posible, el ID de la orden del sistema POS para cruzar datos semánticos después.
+
+2.Filtrado por VAD (Voice Activity Detection):Preprocesamiento crítico.Pasa el audio por un módulo VAD robusto (como Silero VAD). Si el audio es puro ruido de cocina sin voz humana, deséchalo automáticamente para no contaminar el dataset. Esto reduce drásticamente el costo de cómputo y almacenamiento.
+
+3.Minería de Errores y Transcripción (LLM-as-a-Judge):Curación de Datos.Envía una muestra al equipo de etiquetado humano o usa un pipeline híbrido: genera una hipótesis con tu modelo actual, usa un LLM robusto para analizar la coherencia semántica contrastando con los ítems del menú del restaurante, y marca las transcripciones dudosas (con bajo nivel de confianza) para revisión manual obligatoria.
+
+4.Inyección de Ruido Sintético (Augmentation):Preparación de Dataset.Toma tus audios limpios de entrenamiento y mézclalos matemáticamente con ruidos grabados de tus propios restaurantes (el extractor, la freidora, el tráfico del automac). Ajusta el SNR (Signal-to-Noise Ratio) de manera aleatoria entre 5dB y 20dB. Esto obliga al modelo a ignorar esas frecuencias específicas durante el fine-tuning.
+
+5.Fine-Tuning con PEFT/LoRA:Entrenamiento Automático.Ejecuta el entrenamiento utilizando LoRA sobre un modelo base (como Whisper-Medium). Guarda los pesos del adaptador por separado. Ejecuta pruebas de regresión automatizadas para asegurarte de que el nuevo modelo no haya olvidado palabras clave básicas (catastrophic forgetting).
+
+6.Shadow Deployment e Inferencia Eficiente:Despliegue.Exporta el nuevo modelo a Faster-Whisper (formato CTranslate2 de 8 o 16 bits) para minimizar la latencia. Despliégalo primero en modo "Shadow": corre en paralelo al modelo de producción actual, mide su WER (Word Error Rate) en tiempo real con datos nuevos, y si los supera, haz el cambio automático (Blue-Green deployment).
+
+----------------------------
+
+"Problemitas" Clave y Cómo Mitigarlos (Edge Cases)
+
+Al implementar esto en el mundo real, te vas a chocar con tres paredes específicas del rubro gastronómico:
+1. Las Alucinaciones de Whisper con Ruido Extremo
+
+    El problema: Cuando Whisper recibe un audio que es casi puro ruido blanco o música de fondo, en lugar de no transcribir nada, tiende a alucinar. Empieza a repetir frases infinitamente ("Gracias por su compra, gracias por su compra...") o a inventar subtítulos de la nada.
+
+    Mitigación: Configura de manera estricta el parámetro no_speech_threshold y el logprob_threshold en la inferencia de Whisper. Además, añade una capa post-VAD que corte el procesamiento si la energía de la voz está por debajo del umbral de ruido del restaurante.
+
+2. El "Menú Cambiante" y Nombres de Productos (OOV - Out of Vocabulary)
+
+    El problema: Si el restaurante saca una hamburguesa nueva llamada "MegaCheddar Blast", el modelo base jamás la va a reconocer; entenderá algo como "me da una chedar de las".
+
+    Mitigación: No dependas solo del ASR. Implementa un Lexicon/Hotwording pass o un corrector ortográfico semántico post-ASR. Dado que tienes el menú del restaurante en una base de datos, puedes inyectar esos términos al prompt inicial de Whisper (initial_prompt) en cada llamada de inferencia para sesgar las probabilidades del token hacia los platos reales.
+
+3. Solapamiento de Voces (El cliente vs. el cajero/acompañante)
+
+    El problema: El cliente está ordenando en el automac, pero el hijo desde el asiento de atrás grita "¡Y papas fritas!". El ASR mezclará todo.
+
+    Mitigación: Necesitas evaluar componentes de Diarización de Audio (saber quién habla) o aplicar algoritmos de separación de fuentes (como Demucs o MossFormers) optimizados para la frecuencia de la voz humana más cercana al micrófono físico.
+
+
+
+----------------
+
+
+Roadmap del Proyecto: De Cero a Producción Autónoma
+
+Fase 1: Cimientos y Arquitectura de Inferencia (Semanas 1-4)
+
+    Objetivo: Tener un sistema funcionando con el modelo out-of-the-box pero optimizado en latencia.
+
+    Hitos:
+
+        Montar el stack local/Cloud de inferencia usando Docker. Implementar Faster-Whisper.
+
+        Establecer la telemetría: registrar latencia de audio (Time-to-First-Token) y guardar cada audio entrante en un bucket de S3/MinIO ordenado por fecha y sucursal.
+
+        Medir el WER inicial en los restaurantes recolectando las primeras 500 muestras de audio real y transcribiéndolas a mano. Ese es tu ground-truth cero.
+
+Fase 2: El Pipeline de Datos y Primer Entrenamiento (Semanas 5-8)
+
+    Objetivo: Superar el modelo base mediante datos sintéticos y adaptadores ligeros.
+
+    Hitos:
+
+        Construir el script de Audio Augmentation: Grabar pistas de "solo ruido" de la cocina a diferentes horas y crear el pipeline para mezclarlas con voces limpias.
+
+        Configurar el entorno de entrenamiento utilizando Hugging Face Transformers + PEFT (LoRA). Entrenar con Whisper-Base o Whisper-Small para iterar rápido.
+
+        Implementar la métrica de evaluación automatizada. Si el WER baja un 15% respecto al baseline en el dataset de prueba ruidoso, pasamos a la siguiente fase.
+
+Fase 3: El Flywheel Autónomo (Semanas 9+)
+
+    Objetivo: Automatizar la mejora del modelo sin intervención constante de ingeniería.
+
+    Hitos:
+
+        Pipeline de re-entrenamiento automático: Programar un job (pudiendo usar herramientas de orquestación de datos) que revise semanalmente los audios donde el modelo tuvo baja confianza de predicción.
+
+        Integrar la lógica de LLM-as-a-Judge: un agente de software que compare la transcripción del ASR con la orden final consolidada en el POS del restaurante para validar si el ASR acertó en el core de la orden (ej: si el cliente pidió Coca y el ticket dice Coca, la transcripción es probablemente correcta).
+
+        Desplegar el pipeline de CI/CD para modelos: Compilar automáticamente el adaptador LoRA ganador a formato CTranslate2 y subirlo al registro de modelos para su consumo.
+
+
+
+
+
+
+Pares de Confusión Fonética (Restaurante vs. No Restaurante)
+
+Restaurant Word	Noisy Confusion Word	Acoustic / Linguistic Reason
+Glass	Class / Grass	Confusión entre las oclusivas velares (/g/ vs /k/) o las líquidas (/l/ vs /r/) bajo ruido blanco.
+Knife	Life / Wife	Como la "K" es muda, la fricativa inicial /n/ se mimetiza fácilmente con la /l/ o la /w/ si hay siseo de fondo.
+Fork	Folk / Work	En inglés americano o británico, la /r/ interna suele ocluirse, haciendo que Fork y Folk compartan casi el mismo espectrograma.
+Spoon	Soon / Moon	La explosión de la /p/ inicial se pierde por completo si coincide con el choque de un plato o cubierto en la cocina.
+Plate	Place / Play	La /t/ final casi nunca se suelta del todo en el habla rápida. Sin esa /t/, Plate suena idéntico a Place o Play.
+Soup	Soap	Un clásico error de vowel shifting (desplazamiento de vocales) en audios de baja fidelidad donde las frecuencias medias se distorsionan.
+Check	Deck / Chick	La consonante africada /tʃ/ inicial pierde sus frecuencias altas con el ruido del extractor, confundiéndose con la /d/.
+Steak	Snake / Stick	La combinación de la /t/ con la /eɪ/ se deforma ante ruidos sordos, haciendo que el modelo entienda cosas insólitas (como "vívora").
+Fries	Flies / Cries	Las consonantes líquidas (/r/ vs /l/) son las primeras en degradarse cuando cae el SNR (Signal-to-Noise Ratio).
+Waiter	Water / Later	En inglés americano, la "t" intervocálica se convierte en un flap (suena como una 'r' suave). Bajo ruido, Waiter y Water son casi indistinguibles.
+Bill	Pill / Will	Las bilabiales /b/, /p/ y la semivocal /w/ comparten una estructura de envolvente acústica muy similar en entornos de sala.
+Order	Border / Odour	La vocal abierta inicial /ɔː/ puede ser fácilmente precedida por un ruido de aire que el modelo interpreta como una consonante (/b/).
+
+Palabra de Restaurante	Palabra Ajena (Confundible)	Tipo de Confusión Acústica
+Tenedor	Tejedor / Tendedor	Cambio de consonante media (sorda/sonora).
+Plato	Plazo / Pacto	En español de LatAm (seseo), Plato y Plazo suenan casi idénticos con ruido de fondo.
+Vaso	Paso / Bazo	Confusión entre oclusivas bilabiales (/b/ vs /p/). En seseo, Vaso y Bazo son homófonas.
+Copa	Capa / Popa	Sustitución de vocales (/o/ por /a/) o consonante inicial.
+Sopa	Ropa / Sapo	La /s/ inicial es muy propensa a ser enmascarada por el siseo de una freidora o aire acondicionado.
+Mozo	Pozo / Mazo	Confusión de consonante bilabial (/m/ vs /p/).
+Mesa	Misa / Meta	Cambio de vocal interna (/e/ por /i/). Muy común en audios de baja fidelidad.
+Servilleta	Silueta	Comparten casi el mismo patrón de envolvente acústica y duración de sílabas.
+Postre	Poste / Peste	El ruido de fondo suele "comerse" la consonante vibrante (/r/).
+Cuenta	Cuerda / Cueva	Confusión en el grupo consonántico central (/nt/ vs /rd/).
+Hielo	Cielo / Hilo	En zonas con seseo, Hielo y Cielo suenan exactamente igual. El modelo necesita contexto puro para elegir.
+Pollo	Polvo / Apoyo	La pronunciación de la "y/ll" en entornos ruidosos se mimetiza con la /v/ o la /y/ suave.
+Cocina	Bocina / Piscina	Rimas consonánticas perfectas. Si el cliente pide algo "de la cocina" y el ASR entiende "bocina", falla el contexto.
+Café	Gafé / Cofre	Confusión entre oclusivas velares (/k/ de café vs /g/ de gafé).
+Carta	Corta / Marta	Cambio de vocal o consonante inicial.
+Salsa	Balsa / Salva	El siseo del extractor puede hacer que la /s/ inicial suene como /b/ o /f/.

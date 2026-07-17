@@ -1,0 +1,17 @@
+# ARS GPU image — cloud training / fp16 inference (plan/phases/phase-0 §0.4).
+# DOCUMENTED, not built in phase 0. The training path (AXIS 2, phase 4) uses this.
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.12 python3-pip ffmpeg libsndfile1 make git \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+COPY . .
+# Install core + training/preprocess/flywheel groups for the GPU path.
+RUN uv sync --all-groups || uv sync
+
+ENV ARS_ASR__DEVICE=cuda ARS_ASR__COMPUTE_TYPE=float16
+CMD ["bash"]

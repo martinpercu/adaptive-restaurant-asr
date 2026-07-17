@@ -1,0 +1,48 @@
+# --- ARS gitignore ---
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Data / models / reports are gitignored except manifests & READMEs
+data/**
+!data/**/
+!data/**/manifest.parquet
+!data/**/manifest.json
+!data/**/dataset.json
+!data/**/README.md
+!data/**/*.license
+
+models/**
+!models/
+!models/registry.json
+
+reports/**
+!reports/
+!reports/README.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.uv/
+.python-version.local
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+
+# OS / editors
+.DS_Store
+*.swp
+.idea/
+.vscode/

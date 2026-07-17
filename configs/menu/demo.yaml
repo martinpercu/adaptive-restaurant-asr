@@ -1,0 +1,162 @@
+# Demo bilingual menu (store_id: demo). Consumed by the TTS corpus generator (phase 0),
+# the ASR prompt builder (phase 1) and the keydetector lexicon (phase 5).
+# ~40 items; each item carries es/en names + aliases. Prices are illustrative.
+store_id: demo
+currency: USD
+lang_default: es
+
+# Service / utensil domain terms (not orderable items, but high-value KER keywords —
+# they cover the non-food confusion pairs from idea.txt).
+service_terms:
+  - {es: "mesa",       en: "table"}
+  - {es: "carta",      en: "menu"}
+  - {es: "cuenta",     en: "check"}
+  - {es: "cuenta",     en: "bill"}
+  - {es: "mozo",       en: "waiter"}
+  - {es: "orden",      en: "order"}
+  - {es: "plato",      en: "plate"}
+  - {es: "vaso",       en: "glass"}
+  - {es: "copa",       en: "cup"}
+  - {es: "tenedor",    en: "fork"}
+  - {es: "cuchara",    en: "spoon"}
+  - {es: "cuchillo",   en: "knife"}
+  - {es: "servilleta", en: "napkin"}
+  - {es: "cocina",     en: "kitchen"}
+  - {es: "hielo",      en: "ice"}
+
+items:
+  # --- mains ---
+  - {id: m-burger-classic, category: mains, price: 6.50,
+     name: {es: "hamburguesa clásica", en: "classic burger"},
+     aliases: {es: ["hamburguesa", "burger"], en: ["burger", "hamburger"]}}
+  - {id: m-cheeseburger, category: mains, price: 7.00,
+     name: {es: "hamburguesa con queso", en: "cheeseburger"},
+     aliases: {es: ["cheeseburger"], en: ["cheese burger"]}}
+  - {id: m-double-burger, category: mains, price: 8.50,
+     name: {es: "hamburguesa doble", en: "double burger"},
+     aliases: {es: ["doble"], en: ["double"]}}
+  - {id: m-chicken-sandwich, category: mains, price: 6.90,
+     name: {es: "sándwich de pollo", en: "chicken sandwich"},
+     aliases: {es: ["pollo", "sanguche de pollo"], en: ["chicken", "chicken sammich"]}}
+  - {id: m-chicken-nuggets, category: mains, price: 5.20,
+     name: {es: "nuggets de pollo", en: "chicken nuggets"},
+     aliases: {es: ["nuggets", "pollo"], en: ["nuggets", "chicken"]}}
+  - {id: m-steak-wrap, category: mains, price: 8.90,
+     name: {es: "wrap de bistec", en: "steak wrap"},
+     aliases: {es: ["bistec", "wrap"], en: ["steak", "wrap"]}}
+  - {id: m-fish-sandwich, category: mains, price: 6.70,
+     name: {es: "sándwich de pescado", en: "fish sandwich"},
+     aliases: {es: ["pescado"], en: ["fish"]}}
+  - {id: m-veggie-burger, category: mains, price: 6.80,
+     name: {es: "hamburguesa vegetariana", en: "veggie burger"},
+     aliases: {es: ["vegetariana", "veggie"], en: ["veggie", "vegetarian"]}}
+  - {id: m-hotdog, category: mains, price: 4.50,
+     name: {es: "pancho", en: "hot dog"},
+     aliases: {es: ["hot dog", "perro caliente"], en: ["hotdog", "frank"]}}
+  - {id: m-taco, category: mains, price: 3.90,
+     name: {es: "taco", en: "taco"},
+     aliases: {es: ["tacos"], en: ["tacos"]}}
+  - {id: m-burrito, category: mains, price: 7.40,
+     name: {es: "burrito", en: "burrito"},
+     aliases: {es: ["burritos"], en: ["burritos"]}}
+  - {id: m-quesadilla, category: mains, price: 5.90,
+     name: {es: "quesadilla", en: "quesadilla"},
+     aliases: {es: ["quesadillas"], en: ["cheese quesadilla"]}}
+
+  # --- sides ---
+  - {id: s-fries, category: sides, price: 2.90,
+     name: {es: "papas fritas", en: "fries"},
+     aliases: {es: ["papas", "fritas"], en: ["french fries", "chips"]}}
+  - {id: s-large-fries, category: sides, price: 3.60,
+     name: {es: "papas grandes", en: "large fries"},
+     aliases: {es: ["papas grandes"], en: ["big fries"]}}
+  - {id: s-onion-rings, category: sides, price: 3.40,
+     name: {es: "aros de cebolla", en: "onion rings"},
+     aliases: {es: ["cebolla"], en: ["rings"]}}
+  - {id: s-soup, category: sides, price: 4.20,
+     name: {es: "sopa", en: "soup"},
+     aliases: {es: ["sopa del día"], en: ["soup of the day"]}}
+  - {id: s-salad, category: sides, price: 5.10,
+     name: {es: "ensalada", en: "salad"},
+     aliases: {es: ["ensalada verde"], en: ["green salad"]}}
+  - {id: s-side-salad, category: sides, price: 3.20,
+     name: {es: "ensalada chica", en: "side salad"},
+     aliases: {es: ["ensalada pequeña"], en: ["small salad"]}}
+  - {id: s-mashed, category: sides, price: 3.00,
+     name: {es: "puré de papas", en: "mashed potatoes"},
+     aliases: {es: ["puré"], en: ["mash"]}}
+  - {id: s-coleslaw, category: sides, price: 2.80,
+     name: {es: "ensalada de repollo", en: "coleslaw"},
+     aliases: {es: ["repollo"], en: ["slaw"]}}
+
+  # --- drinks ---
+  - {id: d-cola, category: drinks, price: 2.20,
+     name: {es: "gaseosa", en: "soda"},
+     aliases: {es: ["coca", "cola", "refresco"], en: ["coke", "pop", "cola"]}}
+  - {id: d-diet-cola, category: drinks, price: 2.20,
+     name: {es: "gaseosa dietética", en: "diet soda"},
+     aliases: {es: ["coca light", "cola light"], en: ["diet coke"]}}
+  - {id: d-water, category: drinks, price: 1.50,
+     name: {es: "agua", en: "water"},
+     aliases: {es: ["botella de agua", "vaso de agua"], en: ["bottle of water"]}}
+  - {id: d-sparkling-water, category: drinks, price: 1.90,
+     name: {es: "agua con gas", en: "sparkling water"},
+     aliases: {es: ["soda", "agua mineral"], en: ["fizzy water"]}}
+  - {id: d-orange-juice, category: drinks, price: 2.60,
+     name: {es: "jugo de naranja", en: "orange juice"},
+     aliases: {es: ["jugo", "zumo"], en: ["oj", "juice"]}}
+  - {id: d-lemonade, category: drinks, price: 2.40,
+     name: {es: "limonada", en: "lemonade"},
+     aliases: {es: ["limón"], en: ["lemon"]}}
+  - {id: d-coffee, category: drinks, price: 2.00,
+     name: {es: "café", en: "coffee"},
+     aliases: {es: ["cafecito", "café solo"], en: ["black coffee"]}}
+  - {id: d-latte, category: drinks, price: 3.10,
+     name: {es: "café con leche", en: "latte"},
+     aliases: {es: ["latte", "cortado"], en: ["cafe latte"]}}
+  - {id: d-tea, category: drinks, price: 1.80,
+     name: {es: "té", en: "tea"},
+     aliases: {es: ["té caliente"], en: ["hot tea"]}}
+  - {id: d-iced-tea, category: drinks, price: 2.10,
+     name: {es: "té helado", en: "iced tea"},
+     aliases: {es: ["té frío"], en: ["ice tea"]}}
+  - {id: d-milkshake, category: drinks, price: 3.80,
+     name: {es: "malteada", en: "milkshake"},
+     aliases: {es: ["batido", "licuado"], en: ["shake"]}}
+  - {id: d-beer, category: drinks, price: 4.00,
+     name: {es: "cerveza", en: "beer"},
+     aliases: {es: ["birra"], en: ["draft beer"]}}
+
+  # --- desserts ---
+  - {id: p-ice-cream, category: desserts, price: 3.20,
+     name: {es: "helado", en: "ice cream"},
+     aliases: {es: ["helado de vainilla"], en: ["vanilla ice cream"]}}
+  - {id: p-brownie, category: desserts, price: 3.00,
+     name: {es: "brownie", en: "brownie"},
+     aliases: {es: ["brownie de chocolate"], en: ["chocolate brownie"]}}
+  - {id: p-flan, category: desserts, price: 3.30,
+     name: {es: "flan", en: "flan"},
+     aliases: {es: ["flan casero"], en: ["custard"]}}
+  - {id: p-apple-pie, category: desserts, price: 2.90,
+     name: {es: "tarta de manzana", en: "apple pie"},
+     aliases: {es: ["pie de manzana"], en: ["pie"]}}
+  - {id: p-cookie, category: desserts, price: 1.60,
+     name: {es: "galleta", en: "cookie"},
+     aliases: {es: ["galletita"], en: ["cookies"]}}
+  - {id: p-churros, category: desserts, price: 3.10,
+     name: {es: "churros", en: "churros"},
+     aliases: {es: ["churro"], en: ["churro"]}}
+
+  # --- condiments ---
+  - {id: c-ketchup, category: condiments, price: 0.30,
+     name: {es: "salsa de tomate", en: "ketchup"},
+     aliases: {es: ["kétchup", "salsa"], en: ["catsup", "sauce"]}}
+  - {id: c-mayo, category: condiments, price: 0.30,
+     name: {es: "mayonesa", en: "mayo"},
+     aliases: {es: ["mayo"], en: ["mayonnaise"]}}
+  - {id: c-mustard, category: condiments, price: 0.30,
+     name: {es: "mostaza", en: "mustard"},
+     aliases: {es: ["mostaza amarilla"], en: ["yellow mustard"]}}
+  - {id: c-hot-sauce, category: condiments, price: 0.30,
+     name: {es: "salsa picante", en: "hot sauce"},
+     aliases: {es: ["picante", "salsa"], en: ["chili sauce"]}}

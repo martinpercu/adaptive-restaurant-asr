@@ -1,0 +1,24 @@
+# Noise taxonomy — single source of truth (plan/01-conventions.md §3.1).
+# Codes: noise-<SUBTYPE>-<LEVEL>. SUBTYPE = two uppercase letters (first = family).
+# New subtypes are APPENDED, never renamed or reused.
+families:
+  A: {name: kitchen}
+  B: {name: outdoor}
+  C: {name: front-of-house}
+  D: {name: music-media}
+subtypes:
+  AA: {family: A, name: dishes-cutlery,     desc: "plates, cutlery clatter, glass clinks"}
+  AB: {family: A, name: fryer-extractor,    desc: "fryer sizzle, extractor hood, stationary hum"}
+  AC: {family: A, name: kitchen-babble,     desc: "multiple staff voices talking in kitchen"}
+  BA: {family: B, name: drive-thru-traffic, desc: "car engines, idling, street traffic at the lane"}
+  BB: {family: B, name: construction,       desc: "jackhammer, drilling, hammering"}
+  BC: {family: B, name: car-cabin,          desc: "voices/radio inside the customer's car (passengers, kids shouting) over an engine bed — the primary drive-thru babble source"}
+  CA: {family: C, name: dining-babble,      desc: "customers talking in dining room"}
+  CB: {family: C, name: music,              desc: "background music / radio"}
+levels:
+  "05": {snr_db: 10.0,  name: low}
+  "10": {snr_db: 0.0,   name: equal}   # noise RMS == clean speech RMS
+  "15": {snr_db: -5.0,  name: high}
+  "20": {snr_db: -10.0, name: extreme} # optional stress level, not part of the canonical grid
+# Canonical grid = all subtypes x levels {05,10,15}. Level 20 is opt-in for stress tests only.
+canonical_levels: ["05", "10", "15"]

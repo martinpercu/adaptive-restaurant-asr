@@ -1,0 +1,33 @@
+# ARS local stack: API + MinIO (S3-compatible storage). plan/phases/phase-0 §0.4.
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cpu
+    ports:
+      - "8000:8000"
+    environment:
+      ARS_STORAGE__BACKEND: s3
+      ARS_S3_ENDPOINT: http://minio:9000
+      ARS_S3_ACCESS_KEY: minioadmin
+      ARS_S3_SECRET_KEY: minioadmin
+      ARS_S3_BUCKET: ars
+    depends_on:
+      - minio
+    volumes:
+      - ../configs:/app/configs:ro
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+
+volumes:
+  minio-data:

@@ -1,0 +1,35 @@
+# Seed phonetic-confusion pairs, transcribed from idea.txt (plan source material).
+# `target` = the restaurant word the customer actually says (the KER keyword).
+# `confusions` = words the ASR tends to emit instead under noise.
+# Consumed in phase 0 by scripts/tts_corpus.py (every `target` must appear in the corpus)
+# and in phase 5 as the seed for configs/rules/rules-<lang>.yaml confusion rules.
+en:
+  - {target: glass,  confusions: [class, grass],  reason: "velar /g/~/k/ or liquid /l/~/r/ under white noise"}
+  - {target: knife,  confusions: [life, wife],    reason: "silent K; initial /n/ mimics /l/,/w/ under hiss"}
+  - {target: fork,   confusions: [folk, work],    reason: "internal /r/ occluded; fork/folk near-identical"}
+  - {target: spoon,  confusions: [soon, moon],    reason: "/p/ burst lost against cutlery clatter"}
+  - {target: plate,  confusions: [place, play],   reason: "final /t/ unreleased in fast speech"}
+  - {target: soup,   confusions: [soap],          reason: "vowel shift in low-fidelity mid frequencies"}
+  - {target: check,  confusions: [deck, chick],   reason: "affricate /tʃ/ loses highs under extractor noise"}
+  - {target: steak,  confusions: [snake, stick],  reason: "/t/+/eɪ/ deformed by broadband noise"}
+  - {target: fries,  confusions: [flies, cries],  reason: "liquids /r/~/l/ degrade first as SNR drops"}
+  - {target: waiter, confusions: [water, later],  reason: "intervocalic /t/ flap; waiter~water under noise"}
+  - {target: bill,   confusions: [pill, will],    reason: "bilabials /b/,/p/,/w/ share envelope in dining rooms"}
+  - {target: order,  confusions: [border, odour], reason: "open /ɔː/ onset misheard with a leading consonant"}
+es:
+  - {target: tenedor,    confusions: [tejedor, tendedor], reason: "cambio de consonante media sorda/sonora"}
+  - {target: plato,      confusions: [plazo, pacto],      reason: "seseo: plato~plazo con ruido de fondo"}
+  - {target: vaso,       confusions: [paso, bazo],        reason: "oclusivas bilabiales /b/~/p/; seseo vaso~bazo"}
+  - {target: copa,       confusions: [capa, popa],        reason: "sustitución de vocal o consonante inicial"}
+  - {target: sopa,       confusions: [ropa, sapo],        reason: "/s/ inicial enmascarada por freidora/AC"}
+  - {target: mozo,       confusions: [pozo, mazo],        reason: "consonante bilabial /m/~/p/"}
+  - {target: mesa,       confusions: [misa, meta],        reason: "cambio de vocal interna /e/~/i/"}
+  - {target: servilleta, confusions: [silueta],           reason: "mismo patrón de envolvente y duración silábica"}
+  - {target: postre,     confusions: [poste, peste],      reason: "el ruido se come la vibrante /r/"}
+  - {target: cuenta,     confusions: [cuerda, cueva],     reason: "grupo consonántico central /nt/~/rd/"}
+  - {target: hielo,      confusions: [cielo, hilo],       reason: "seseo: hielo~cielo idénticos"}
+  - {target: pollo,      confusions: [polvo, apoyo],      reason: "y/ll en ruido se mimetiza con /v/ o /y/ suave"}
+  - {target: cocina,     confusions: [bocina, piscina],   reason: "rimas consonánticas; 'de la cocina'~'bocina'"}
+  - {target: café,       confusions: [gafé, cofre],       reason: "oclusivas velares /k/~/g/"}
+  - {target: carta,      confusions: [corta, marta],      reason: "cambio de vocal o consonante inicial"}
+  - {target: salsa,      confusions: [balsa, salva],      reason: "siseo del extractor: /s/ inicial ~ /b/,/f/"}
