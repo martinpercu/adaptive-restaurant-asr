@@ -61,6 +61,10 @@ def test_dataset_manifests_valid(repo_root):
     for manifest in manifests:
         df = pd.read_parquet(manifest)
         assert len(df) > 0, f"empty manifest: {manifest}"
+        # utterance_ids must be unique within a manifest (per-source seq collisions
+        # scramble downstream text/audio pairing — guards the fix in DECISIONS).
+        ids = df["utterance_id"].tolist()
+        assert len(ids) == len(set(ids)), f"duplicate utterance_ids in {manifest}"
         for rec in df.to_dict(orient="records"):
             kw = rec.get("keywords")
             rec["keywords"] = list(kw) if kw is not None else []

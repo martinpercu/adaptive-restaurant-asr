@@ -43,18 +43,25 @@ def build_lang(lang: str, settings: Settings, eval_frac: float, min_utts: int) -
         return None
     df = pd.read_parquet(manifest)
     df["speaker"] = df["path"].map(speaker_of)
-
-    speakers = sorted(df["speaker"].unique())
     rng = random.Random(settings.seed)
-    rng.shuffle(speakers)
-    n_eval = max(1, round(len(speakers) * eval_frac))
-    eval_speakers = set(speakers[:n_eval])
+
+    # Stratify by accent: hold out eval_frac of each accent's speakers so every accent
+    # is represented (avoids a random split landing on only a subset of accents).
+    eval_speakers: set[str] = set()
+    remaining: list[str] = []
+    for accent in sorted(df["accent"].dropna().unique()):
+        spk = sorted(df[df["accent"] == accent]["speaker"].unique())
+        rng.shuffle(spk)
+        k = max(1, round(len(spk) * eval_frac))
+        eval_speakers.update(spk[:k])
+        remaining.extend(spk[k:])
     eval_df = df[df["speaker"].isin(eval_speakers)].reset_index(drop=True)
 
-    # top up to min_utts by adding whole speakers if the split came out small
-    i = n_eval
-    while len(eval_df) < min_utts and i < len(speakers):
-        eval_speakers.add(speakers[i])
+    # top up to min_utts by adding more held-back speakers if the split came out small
+    rng.shuffle(remaining)
+    i = 0
+    while len(eval_df) < min_utts and i < len(remaining):
+        eval_speakers.add(remaining[i])
         eval_df = df[df["speaker"].isin(eval_speakers)].reset_index(drop=True)
         i += 1
 

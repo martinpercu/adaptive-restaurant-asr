@@ -264,6 +264,11 @@ def _write_manifest(out_dir: Path, rows: list[dict], src: SpeechSource, settings
         prev = pd.read_parquet(manifest)
         prev = prev[prev["source"] != src.name]
         df = pd.concat([prev, df], ignore_index=True)
+    # Renumber deterministically by (source, path) so utterance_ids are UNIQUE across
+    # the merged sources and STABLE across a full rebuild (each source keeps a fixed
+    # id block by alphabetical order). Per-source seq alone collides -> see DECISIONS.
+    df = df.sort_values(["source", "path"], kind="stable").reset_index(drop=True)
+    df["utterance_id"] = [f"cl-{src.lang}-{i:05d}" for i in range(len(df))]
     df.to_parquet(manifest, index=False)
     info = {
         "dataset_id": f"clean-{src.lang}-v1",

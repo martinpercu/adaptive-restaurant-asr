@@ -1,3 +1,19 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "version": "0.1.0",
+      "stage": "production",
+      "base_model": "whisper-small",
+      "adapter": null,
+      "ct2_path": null,
+      "languages": [
+        "es",
+        "en"
+      ],
+      "gates": {},
+      "sensitivity_run": null,
+      "promoted_at": "2026-07-17T19:49:04Z",
+      "promoted_by": "phase1-baseline"
+    }
+  ]
 }

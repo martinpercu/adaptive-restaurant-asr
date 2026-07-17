@@ -14,6 +14,12 @@ Format:
 
 ---
 
+## 2026-07-17 — Phase 1: utterance_id collision bug (per-source seq) fixed + gate strengthened
+- **Context:** the phase-1 baseline came out at ~49% clean-`es` WER (>40% alarm threshold in the phase-1 doc). Investigation: normalization and references were correct and most clips transcribed perfectly, but a large fraction paired a short reference with unrelated long audio. Root cause: `scripts/download_datasets.py` assigned `cl-<lang>-<seq:05d>` with `seq` restarting at 0 **per source**, so the merged `data/clean/es` manifest had 6 rows sharing each id (1969 rows, 379 unique ids). `scripts/build_eval_sets.py` hardlinks audio to `audio/<utterance_id>.wav`; colliding ids meant one source's audio backed many manifest rows with different texts → scrambled eval pairs.
+- **Decision:** (1) renumber deterministically by `(source, path)` on every manifest write, giving unique ids that stay stable across a full rebuild (each source keeps a fixed id block by alphabetical order); (2) **strengthen** phase-0 acceptance test 4 to assert `utterance_id` uniqueness per manifest (a gate strengthening, never a weakening); (3) stratify `build_eval_sets` by accent so eval-clean-es covers all six LatAm accents. (path, text) pairs were verified correct, so existing clean manifests were renumbered in place (no audio reconversion).
+- **Why:** the bug was pure id bookkeeping; audio/text on disk were correct. After the fix, clean-`es` WER dropped from 0.49 to ~0.07 on a 50-clip probe — the sane whisper-small range. The strengthened gate prevents silent recurrence.
+- **Impact:** `scripts/download_datasets.py` (renumber), `scripts/build_eval_sets.py` (accent stratification), `tests/acceptance/test_phase0_foundations.py` (id-uniqueness assertion), regenerated clean + eval manifests. No contract change.
+
 ## 2026-07-17 — Phase 0: Python pinned to 3.12; `make setup` installs core+dev, not all groups
 - **Context:** the plan says Python ≥ 3.11 and `make setup` = "uv sync, all groups". The build host has Python 3.14, for which `torch`/`ctranslate2`/`faster-whisper` wheels are not yet reliably published; and `--all-groups` pulls `torch`, `deepfilternet`, `demucs`, `prefect` — none needed until phases 3/4/6 — making onboarding and CI heavy.
 - **Decision:** pin the project to Python 3.12 via `.python-version` and `requires-python = ">=3.11,<3.13"`. `make setup` runs `uv sync` (main + `dev` group only); `make setup-all` runs `uv sync --all-groups` for the training/preprocess/flywheel path. CI installs main+dev.
