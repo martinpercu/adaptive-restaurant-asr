@@ -1,0 +1,18 @@
+{
+  "dataset_id": "eval-clean-en-v1",
+  "created_at": "2026-07-17T19:47:43Z",
+  "generator": "scripts.build_eval_sets",
+  "generator_version": "0.1.0",
+  "config_hash": "",
+  "seed": 1337,
+  "row_count": 266,
+  "langs": [
+    "en"
+  ],
+  "eval_speakers": [
+    "1462",
+    "1673",
+    "2086",
+    "251"
+  ]
+}

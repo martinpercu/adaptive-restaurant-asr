@@ -48,11 +48,11 @@ download-data: ## bootstrap public datasets (idempotent)
 
 .PHONY: fixtures
 fixtures: ## generate TTS test fixtures into data/fixtures/
-	$(UV) run python -m scripts.make_fixtures --config $(CONFIG)
+	$(UV) run --group tts python -m scripts.make_fixtures --config $(CONFIG)
 
 .PHONY: tts-corpus
 tts-corpus: ## generate the restaurant-order TTS domain corpus (both languages)
-	$(UV) run python -m scripts.tts_corpus --config $(CONFIG)
+	$(UV) run --group tts python -m scripts.tts_corpus --config $(CONFIG)
 
 .PHONY: api
 api: ## run the FastAPI service locally
