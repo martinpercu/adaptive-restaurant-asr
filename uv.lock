@@ -244,6 +244,9 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+deepfilternet = [
+    { name = "deepfilternet" },
+]
 dev = [
     { name = "httpx" },
     { name = "pytest" },
@@ -256,7 +259,6 @@ flywheel = [
     { name = "prefect" },
 ]
 preprocess = [
-    { name = "deepfilternet" },
     { name = "noisereduce" },
 ]
 separation = [
@@ -298,6 +300,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+deepfilternet = [{ name = "deepfilternet", specifier = ">=0.5,<1" }]
 dev = [
     { name = "httpx", specifier = ">=0.27,<1" },
     { name = "pytest", specifier = ">=8.2,<9" },
@@ -309,10 +312,7 @@ flywheel = [
     { name = "openai", specifier = ">=1.40,<2" },
     { name = "prefect", specifier = ">=2.19,<4" },
 ]
-preprocess = [
-    { name = "deepfilternet", specifier = ">=0.5,<1" },
-    { name = "noisereduce", specifier = ">=3.0,<4" },
-]
+preprocess = [{ name = "noisereduce", specifier = ">=3.0,<4" }]
 separation = [{ name = "demucs", specifier = ">=4.0,<5" }]
 train = [
     { name = "accelerate", specifier = ">=0.33,<2" },

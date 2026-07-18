@@ -79,6 +79,10 @@ def main(argv: list[str] | None = None) -> int:
     df = pd.read_parquet(args.effectiveness)
     eval_df = df[df["subtype"] != CLEAN_KEY]  # policy over real subtypes only
     policy = generate_policy(eval_df, latency_budget_ms=400.0, min_rel_improvement=MIN_REL)
+    # every bank subtype must be mapped (default none for subtypes not measured)
+    bank = pd.read_parquet(Path(settings.paths.data) / "noise_bank" / "manifest.parquet")
+    for st in bank["subtype"].unique():
+        policy.setdefault(st, "none")
 
     run_id = args.run_id or f"run-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
     write_policy_yaml(

@@ -79,9 +79,11 @@ def build_model(n_classes: int):
     class NoiseCNN(nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.features = nn.Sequential(block(1, 16), block(16, 32), block(32, 64), block(64, 64))
+            self.features = nn.Sequential(
+                block(1, 32), block(32, 64), block(64, 128), block(128, 128)
+            )
             self.head = nn.Sequential(
-                nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Linear(64, n_classes)
+                nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Dropout(0.3), nn.Linear(128, n_classes)
             )
 
         def forward(self, x):

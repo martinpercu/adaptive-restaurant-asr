@@ -43,11 +43,13 @@ train = [
     "ctranslate2>=4.3,<5",
 ]
 preprocess = [
-    "noisereduce>=3.0,<4",
-    "deepfilternet>=0.5,<1",
+    "noisereduce>=3.0,<4",  # spectral_gate — pure-python, CPU-viable
+]
+deepfilternet = [
+    "deepfilternet>=0.5,<1",  # neural denoiser — needs a Rust toolchain to build (deepfilterlib)
 ]
 separation = [
-    "demucs>=4.0,<5",
+    "demucs>=4.0,<5",  # demucs_vocals — heavy; typically over the CPU latency budget
 ]
 flywheel = [
     "prefect>=2.19,<4",

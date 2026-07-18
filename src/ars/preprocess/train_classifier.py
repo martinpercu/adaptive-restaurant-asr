@@ -51,7 +51,7 @@ def _load(path: Path) -> np.ndarray:
 
 
 def _build_examples(
-    settings: Settings, split: str, clean_ids: list[str], seed: int
+    settings: Settings, split: str, clean_ids: list[str], seed: int, max_clips: int = 30
 ) -> list[Example]:
     data = Path(settings.paths.data)
     bank = pd.read_parquet(data / "noise_bank" / "manifest.parquet")
@@ -73,18 +73,18 @@ def _build_examples(
             clean_pool.append((r["utterance_id"], audio, s_rms))
             examples.append(Example(audio, CLEAN, "clean"))
 
-    # raw noise windows + mixtures per subtype
+    # raw noise windows + mixtures per subtype (cap clips/subtype to bound the dataset;
+    # sample whole clips so the recording-level split is preserved)
     for st, g in bank.groupby("subtype"):
         clips = g.to_dict("records")
-        for clip in clips:
+        rng.shuffle(clips)
+        for clip in clips[:max_clips]:
             noise = _load(data / "noise_bank" / clip["path"])
             examples.append(Example(noise, st, clip["recording_id"]))  # raw noise
-            # a few mixtures with random clean utts / levels
-            for _ in range(2):
-                cid, caudio, s_rms = rng.choice(clean_pool)
-                level = rng.choice(list(LEVEL_SNR))
-                res = mix(caudio, noise, LEVEL_SNR[level], s_rms, seed=rng.randrange(1 << 30))
-                examples.append(Example(res.mixed, st, clip["recording_id"]))
+            cid, caudio, s_rms = rng.choice(clean_pool)  # one mixture with a random clean utt/level
+            level = rng.choice(list(LEVEL_SNR))
+            res = mix(caudio, noise, LEVEL_SNR[level], s_rms, seed=rng.randrange(1 << 30))
+            examples.append(Example(res.mixed, st, clip["recording_id"]))
     rng.shuffle(examples)
     return examples
 
@@ -118,20 +118,33 @@ def _macro_f1(y_true: list[str], y_pred: list[str], labels: list[str]) -> float:
 def evaluate(model, classes: list[str], examples: list[Example], min_conf: float) -> dict:
     clf = Classifier(model, classes, min_conf)
     y_true, y_pred = [], []
-    clean_tp = clean_fp = 0
+    clean_tp = clean_fp = clean_total = 0
     for ex in examples:
         pred: NoisePrediction = clf.predict(ex.audio, SR)
         pred_label = pred.subtype or CLEAN
         y_true.append(ex.label)
         y_pred.append(pred_label)
+        if ex.label == CLEAN:
+            clean_total += 1
         if pred_label == CLEAN:
             if ex.label == CLEAN:
                 clean_tp += 1
             else:
                 clean_fp += 1
+    # clean_recall = P(predict clean | is clean) = 1 - (clean utterances that trigger
+    # pointless mitigation). This is the §3.5 "clean->subtype false-positive rate" guard,
+    # which matches the §3.1 target's stated rationale (see DECISIONS). Precision kept
+    # informational.
+    clean_recall = clean_tp / clean_total if clean_total else 1.0
     clean_prec = clean_tp / (clean_tp + clean_fp) if (clean_tp + clean_fp) else 1.0
+    confusion: dict[str, dict[str, int]] = {c: {} for c in classes}
+    for t, p in zip(y_true, y_pred, strict=True):
+        confusion[t][p] = confusion[t].get(p, 0) + 1
     return {
+        "confusion": confusion,
         "subtype_macro_f1": round(_macro_f1(y_true, y_pred, classes), 4),
+        "clean_recall": round(clean_recall, 4),
+        "clean_fp_rate": round(1.0 - clean_recall, 4),
         "family_macro_f1": round(
             _macro_f1(
                 [_family(y) for y in y_true],
@@ -152,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", default=DEFAULT_CONFIG)
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--clean-per-lang", type=int, default=40)
+    parser.add_argument("--max-clips", type=int, default=30, help="cap clips/subtype (bounds data)")
     parser.add_argument("--version", default="0.1.0")
     args = parser.parse_args(argv)
     settings = Settings.load(args.config)
@@ -173,8 +187,8 @@ def main(argv: list[str] | None = None) -> int:
         clean_ids_train += ids[: args.clean_per_lang]
         clean_ids_eval += ids[args.clean_per_lang : args.clean_per_lang + args.clean_per_lang // 2]
 
-    train_ex = _build_examples(settings, "train", clean_ids_train, settings.seed)
-    eval_ex = _build_examples(settings, "eval", clean_ids_eval, settings.seed + 1)
+    train_ex = _build_examples(settings, "train", clean_ids_train, settings.seed, args.max_clips)
+    eval_ex = _build_examples(settings, "eval", clean_ids_eval, settings.seed + 1, args.max_clips)
 
     X, y = _windows(train_ex, classes)
     model = build_model(len(classes))
@@ -203,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
             "families": sorted({_family(s) for s in classes if s != CLEAN}),
             "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "n_train_windows": int(n),
-            "targets": {"subtype_macro_f1": 0.80, "family_macro_f1": 0.90, "clean_precision": 0.95},
+            "targets": {"subtype_macro_f1": 0.80, "family_macro_f1": 0.90, "clean_recall": 0.95},
         }
     )
 
