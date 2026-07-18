@@ -68,8 +68,11 @@ class AsrCfg(_Section):
 
 class PreprocessCfg(_Section):
     enabled: bool = True
+    mode: str = "log_only"  # off | log_only | active (production-safe default: log_only)
     classifier: str = "spectral"
+    classifier_path: str = "models/noise_classifier/latest/model.pt"
     policy_path: str = "configs/mitigation_policy.yaml"
+    min_confidence: float = 0.6
 
 
 class KeydetectorCfg(_Section):

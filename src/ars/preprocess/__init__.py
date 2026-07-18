@@ -1,12 +1,14 @@
 """Preprocess — AXIS 1: noise classifier + targeted mitigation chains (phase 3).
 
-Phase 1 ships a pass-through that honors the `PreprocessReport` contract so the
-pipeline and telemetry are wired end-to-end before the real classifier lands.
+`PassthroughPreprocessor` is the phase-1 no-op; `PolicyPreprocessor` (phase 3) does the
+real classify → policy → chain. `build_preprocessor` picks the right one from settings,
+falling back to pass-through when the classifier/policy have not been generated yet.
 """
 
 from __future__ import annotations
 
 import time
+from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import numpy as np
@@ -33,3 +35,19 @@ class PassthroughPreprocessor:
             latency_ms=(time.perf_counter() - t0) * 1000.0,
         )
         return audio, report
+
+
+def build_preprocessor(settings) -> Preprocessor:
+    """AXIS 1 for the production pipeline. Falls back to pass-through if unavailable."""
+    cfg = settings.preprocess
+    if not cfg.enabled or cfg.mode == "off":
+        return PassthroughPreprocessor()
+    classifier_path = Path(cfg.classifier_path)
+    policy_path = Path(cfg.policy_path)
+    if not classifier_path.exists() or not policy_path.exists():
+        return PassthroughPreprocessor()  # not generated yet (pre phase-3 heavy path)
+    from ars.preprocess.classifier import Classifier  # noqa: PLC0415
+    from ars.preprocess.policy import PolicyPreprocessor, load_policy  # noqa: PLC0415
+
+    classifier = Classifier.load(str(classifier_path), min_confidence=cfg.min_confidence)
+    return PolicyPreprocessor(classifier, load_policy(policy_path), mode=cfg.mode)

@@ -27,6 +27,7 @@ from ars.asr.prompt_builder import load_menu
 from ars.config import Settings
 from ars.contracts import FinalTranscript
 from ars.pipeline import Pipeline
+from ars.preprocess import build_preprocessor
 from ars.registry import ModelRegistry
 from ars.vad import SileroVad
 
@@ -59,6 +60,7 @@ def get_pipeline() -> Pipeline:
         settings=settings,
         vad=SileroVad(settings.vad),
         engine=engine,
+        preprocess=build_preprocessor(settings),
         menu=menu,
         model_version=prod.version if prod else None,
     )
