@@ -97,7 +97,9 @@ def run_regression(engine, settings: Settings, corpus_dir: str | Path) -> dict:
             guarded = apply_guard(raw, None, settings.asr.guard)
             if r["part"] == "keyword":
                 kws = list(r["keywords"]) if r["keywords"] is not None else []
-                kw_records.append(UttRecord(ref=r["text"], hyp=guarded.text, lang=lang, keywords=kws))
+                kw_records.append(
+                    UttRecord(ref=r["text"], hyp=guarded.text, lang=lang, keywords=kws)
+                )
             else:
                 gen_refs.append(r["text"])
                 gen_hyps.append(guarded.text)

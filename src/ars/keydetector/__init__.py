@@ -6,4 +6,12 @@ pipeline wires a pass-through corrector until then.
 
 from ars.keydetector.phonetics import en_key, es_key, phonetic_key
 
-__all__ = ["phonetic_key", "es_key", "en_key"]
+__all__ = ["phonetic_key", "es_key", "en_key", "Keydetector"]
+
+
+def __getattr__(name: str):  # lazy to avoid importing rapidfuzz/yaml at package import
+    if name == "Keydetector":
+        from ars.keydetector.pipeline import Keydetector
+
+        return Keydetector
+    raise AttributeError(name)

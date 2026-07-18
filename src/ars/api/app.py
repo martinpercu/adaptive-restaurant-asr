@@ -26,6 +26,7 @@ from ars.asr.engine import WhisperEngine
 from ars.asr.prompt_builder import load_menu
 from ars.config import Settings
 from ars.contracts import FinalTranscript
+from ars.keydetector import Keydetector
 from ars.pipeline import Pipeline
 from ars.preprocess import build_preprocessor
 from ars.registry import ModelRegistry
@@ -61,6 +62,7 @@ def get_pipeline() -> Pipeline:
         vad=SileroVad(settings.vad),
         engine=engine,
         preprocess=build_preprocessor(settings),
+        keydetector=Keydetector.from_settings(settings),
         menu=menu,
         model_version=prod.version if prod else None,
     )

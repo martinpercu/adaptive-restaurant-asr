@@ -1,0 +1,54 @@
+# Seed confusion rules (en) — plan/phases/phase-5 §5.4. wrong = what the ASR OUTPUTS.
+# Only confusions the menu lexicon does NOT already recover live here (soap->soup,
+# class->glass etc. are handled by lexicon phonetic recovery). Every rule ships a golden
+# positive + negative in tests/golden/cases-en.yaml (CLAUDE.md rule 5).
+- id: en-0003
+  lang: en
+  wrong: flies
+  right: fries
+  scope: word
+  context_any: ["and", "of", "order", "some", "with", "please"]
+  context_none: ["bug", "insect", "swarm", "buzzing"]
+  status: active
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "liquid /r/~/l/ degrade; 'flies' (insects) gated off — rare in an order"
+- id: en-0002
+  lang: en
+  wrong: folk
+  right: fork
+  scope: word
+  context_any: ["a", "and", "knife", "spoon", "give", "napkin"]
+  context_none: ["music", "song", "people", "singer"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "internal /r/ occluded; 'folk' (music) common -> log-only with utensil gate"
+- id: en-0006
+  lang: en
+  wrong: deck
+  right: check
+  scope: word
+  context_any: ["bring", "pay", "split", "please", "our"]
+  context_none: ["ship", "boat", "cards", "pool"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "affricate loses highs; 'deck' common -> log-only with pay context"
+- id: en-0007
+  lang: en
+  wrong: pill
+  right: bill
+  scope: word
+  context_any: ["bring", "pay", "split", "please", "our"]
+  context_none: ["take", "doctor", "medicine", "swallow"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "bilabial envelope; 'pill' common -> log-only with pay context"
+- id: en-0008
+  lang: en
+  wrong: snake
+  right: steak
+  scope: word
+  context_any: ["order", "grilled", "medium", "rare", "cooked"]
+  context_none: ["zoo", "venom", "reptile", "grass"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "/t/+/eɪ/ deformed; 'snake' common -> log-only with cooking context"

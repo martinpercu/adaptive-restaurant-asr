@@ -1,0 +1,15 @@
+# Golden cases (en) — one positive + one negative per non-retired rule.
+- {rule_id: en-0003, input: "order some flies please", expected: "order some fries please", mode: replace, fires: true}
+- {rule_id: en-0003, input: "the flies swarm outside", expected: "the flies swarm outside", mode: replace, fires: false}
+
+- {rule_id: en-0002, input: "give me a folk and knife", expected: "give me a folk and knife", mode: log_only, fires: true}
+- {rule_id: en-0002, input: "i love folk music", expected: "i love folk music", mode: log_only, fires: false}
+
+- {rule_id: en-0006, input: "bring our deck please", expected: "bring our deck please", mode: log_only, fires: true}
+- {rule_id: en-0006, input: "cards on the deck of the ship", expected: "cards on the deck of the ship", mode: log_only, fires: false}
+
+- {rule_id: en-0007, input: "pay the pill please", expected: "pay the pill please", mode: log_only, fires: true}
+- {rule_id: en-0007, input: "take a pill for the doctor", expected: "take a pill for the doctor", mode: log_only, fires: false}
+
+- {rule_id: en-0008, input: "order a snake grilled", expected: "order a snake grilled", mode: log_only, fires: true}
+- {rule_id: en-0008, input: "a snake at the zoo", expected: "a snake at the zoo", mode: log_only, fires: false}

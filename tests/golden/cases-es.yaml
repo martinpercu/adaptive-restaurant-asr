@@ -1,0 +1,25 @@
+# Golden cases (es) — one positive (fires) + one negative (untouched) per non-retired rule.
+# {rule_id, input, expected, mode, fires}. active -> replace; approved -> log_only (fires=logs).
+- {rule_id: es-0001, input: "me da un tejedor", expected: "me da un tenedor", mode: replace, fires: true}
+- {rule_id: es-0001, input: "el tejedor trabaja en la fabrica", expected: "el tejedor trabaja en la fabrica", mode: replace, fires: false}
+
+- {rule_id: es-0002, input: "algo de la bocina", expected: "algo de la cocina", mode: replace, fires: true}
+- {rule_id: es-0002, input: "toca la bocina del auto", expected: "toca la bocina del auto", mode: replace, fires: false}
+
+- {rule_id: es-0003, input: "me da una silueta", expected: "me da una servilleta", mode: replace, fires: true}
+- {rule_id: es-0003, input: "la silueta del vestido", expected: "la silueta del vestido", mode: replace, fires: false}
+
+- {rule_id: es-0004, input: "quiero un gafe con leche", expected: "quiero un café con leche", mode: replace, fires: true}
+- {rule_id: es-0004, input: "gafe", expected: "gafe", mode: replace, fires: false}
+
+- {rule_id: es-0005, input: "quiero un plazo de comida", expected: "quiero un plazo de comida", mode: log_only, fires: true}
+- {rule_id: es-0005, input: "el plazo de pago del banco", expected: "el plazo de pago del banco", mode: log_only, fires: false}
+
+- {rule_id: es-0006, input: "quiero una ropa caliente", expected: "quiero una ropa caliente", mode: log_only, fires: true}
+- {rule_id: es-0006, input: "voy a lavar la ropa sucia", expected: "voy a lavar la ropa sucia", mode: log_only, fires: false}
+
+- {rule_id: es-0007, input: "agua con cielo", expected: "agua con cielo", mode: log_only, fires: true}
+- {rule_id: es-0007, input: "el cielo azul con nubes", expected: "el cielo azul con nubes", mode: log_only, fires: false}
+
+- {rule_id: es-0008, input: "quiero un polvo asado", expected: "quiero un polvo asado", mode: log_only, fires: true}
+- {rule_id: es-0008, input: "limpiar el polvo de tierra", expected: "limpiar el polvo de tierra", mode: log_only, fires: false}

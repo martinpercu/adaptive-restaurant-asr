@@ -1,0 +1,84 @@
+# Seed confusion rules (es) — plan/phases/phase-5 §5.4. wrong = what the ASR OUTPUTS.
+# active: low-ambiguity, wrong form rare in orders (fire in replace). approved: wrong form
+# is a common legit word — log-only until phase 6 promotes on evidence. Every rule ships a
+# golden positive + negative in tests/golden/cases-es.yaml (CLAUDE.md rule 5).
+- id: es-0001
+  lang: es
+  wrong: tejedor
+  right: tenedor
+  scope: word
+  context_any: ["me", "da", "un", "quiero", "trae", "cuchillo", "mesa"]
+  context_none: []
+  status: active
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "sorda/sonora media; 'tejedor' (weaver) rare in a drive-thru order"
+- id: es-0002
+  lang: es
+  wrong: bocina
+  right: cocina
+  scope: word
+  context_any: ["de", "la", "en", "plato", "chef"]
+  context_none: ["auto", "coche", "carro"]
+  status: active
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "rima consonántica; gated off car context where 'bocina' (horn) is legit"
+- id: es-0003
+  lang: es
+  wrong: silueta
+  right: servilleta
+  scope: word
+  context_any: ["una", "me", "da", "trae", "pasa", "servilletas"]
+  context_none: []
+  status: active
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "misma envolvente/duración silábica; 'silueta' rare in orders"
+- id: es-0004
+  lang: es
+  wrong: gafé
+  right: café
+  scope: word
+  context_any: ["un", "el", "quiero", "me", "con", "leche"]
+  context_none: []
+  status: active
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "velar /k/~/g/; 'gafé' is not a word"
+- id: es-0005
+  lang: es
+  wrong: plazo
+  right: plato
+  scope: word
+  context_any: ["un", "el", "de", "quiero", "me", "comida"]
+  context_none: ["pago", "cuota", "banco"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "seseo; 'plazo' (deadline) common -> log-only with food context gate"
+- id: es-0006
+  lang: es
+  wrong: ropa
+  right: sopa
+  scope: word
+  context_any: ["una", "de", "quiero", "caliente", "del", "día"]
+  context_none: ["lavar", "sucia", "tienda"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "/s/ inicial enmascarada; 'ropa' (clothes) common -> log-only"
+- id: es-0007
+  lang: es
+  wrong: cielo
+  right: hielo
+  scope: word
+  context_any: ["con", "de", "agua", "sin", "cubitos"]
+  context_none: ["azul", "nube", "estrella"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "seseo; 'cielo' (sky) common -> log-only with drink context gate"
+- id: es-0008
+  lang: es
+  wrong: polvo
+  right: pollo
+  scope: word
+  context_any: ["de", "un", "quiero", "asado", "frito"]
+  context_none: ["limpiar", "tierra"]
+  status: approved
+  provenance: {source: seed, evidence_count: 0, added: "2026-07-18"}
+  notes: "y/ll ~ /v/; 'polvo' (dust) common -> log-only"
