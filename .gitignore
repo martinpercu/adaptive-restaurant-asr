@@ -16,10 +16,19 @@ data/**
 models/**
 !models/
 !models/registry.json
+# classifier eval report is small text evidence (showcase) — weights stay ignored
+!models/noise_classifier/
+!models/noise_classifier/**/
+!models/noise_classifier/**/eval.json
 
+# reports/ are gitignored EXCEPT the light text/image evidence (this repo is a public
+# showcase — see DECISIONS 2026-07-18). Heavy data (*.parquet) stays out.
 reports/**
-!reports/
-!reports/README.md
+!reports/**/
+!reports/**/*.md
+!reports/**/*.json
+!reports/**/*.png
+!reports/**/*.html
 
 # Python
 __pycache__/

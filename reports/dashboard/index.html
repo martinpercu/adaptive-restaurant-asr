@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ARS Dashboard</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:2rem;max-width:1000px}
+h1{border-bottom:2px solid #333} section{margin:1.5rem 0}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ccc;padding:.4rem;text-align:left}
+th{background:#f0f0f0} .empty{color:#999;font-style:italic}
+</style></head><body><h1>ARS — Adaptive Restaurant Speech</h1><section><h2>Model registry</h2><table><thead><tr><th>version</th><th>stage</th><th>base</th><th>adapter</th><th>promoted</th></tr></thead><tbody><tr><td>0.1.0</td><td>production</td><td>whisper-small</td><td>—</td><td>2026-07-17T19:49:04Z</td></tr><tr><td>0.2.0</td><td>candidate</td><td>whisper-tiny</td><td>lora-2026w29</td><td>—</td></tr></tbody></table></section>
+<section><h2>Eval runs (WER trend)</h2><table><thead><tr><th>run</th><th>model</th><th>dataset</th><th>wer</th><th>when</th></tr></thead><tbody><tr><td>run-20260717T212437Z-0.1.0</td><td>0.1.0</td><td>tts-en-v1</td><td>0.019</td><td>2026-07-17T21:24:37Z</td></tr><tr><td>run-20260717T211306Z-0.1.0</td><td>0.1.0</td><td>eval-clean-en-v1</td><td>0.029</td><td>2026-07-17T21:13:06Z</td></tr><tr><td>run-20260717T210321Z-0.1.0</td><td>0.1.0</td><td>tts-es-v1</td><td>0.314</td><td>2026-07-17T21:03:21Z</td></tr><tr><td>run-20260717T205131Z-0.1.0</td><td>0.1.0</td><td>eval-clean-es-v1</td><td>0.062</td><td>2026-07-17T20:51:31Z</td></tr><tr><td>run-20260717T201409Z-0.1.0</td><td>0.1.0</td><td>tts-es-v1</td><td>0.319</td><td>2026-07-17T20:14:09Z</td></tr><tr><td>run-20260717T195952Z-0.1.0</td><td>0.1.0</td><td>eval-clean-es-v1</td><td>0.489</td><td>2026-07-17T19:59:52Z</td></tr><tr><td>run-20260717T194811Z-smoke</td><td>smoke</td><td>eval-clean-es-v1</td><td>0.512</td><td>2026-07-17T19:48:11Z</td></tr></tbody></table></section>
+<section><h2>NDI evolution (top-3 damaging)</h2><table><thead><tr><th>sensitivity run</th><th>top-3 subtypes</th></tr></thead><tbody><tr><td>run-20260718T010058Z-0.1.0</td><td>BB, CA, BC</td></tr></tbody></table></section>
+<section><h2>Latency</h2><p class="empty">no telemetry yet</p></section></body></html>

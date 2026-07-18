@@ -1,0 +1,74 @@
+{
+  "confusion": {
+    "AA": {
+      "AB": 4,
+      "CLEAN": 1,
+      "AA": 4,
+      "CA": 1
+    },
+    "AB": {
+      "AB": 8,
+      "AA": 2
+    },
+    "AC": {
+      "CA": 1,
+      "CLEAN": 6,
+      "BC": 2,
+      "AC": 9
+    },
+    "BA": {
+      "BA": 169,
+      "BB": 11,
+      "CLEAN": 7,
+      "BC": 1
+    },
+    "BB": {
+      "BB": 281,
+      "BA": 10,
+      "CLEAN": 9
+    },
+    "BC": {
+      "BA": 72,
+      "BC": 76,
+      "BB": 9,
+      "CLEAN": 28,
+      "CA": 3
+    },
+    "CA": {
+      "CA": 16,
+      "CLEAN": 2
+    },
+    "CLEAN": {
+      "CLEAN": 80
+    }
+  },
+  "subtype_macro_f1": 0.7175,
+  "clean_recall": 1.0,
+  "clean_fp_rate": 0.0,
+  "family_macro_f1": 0.8412,
+  "clean_precision": 0.6015,
+  "n_eval": 812,
+  "version": "0.1.0",
+  "classes": [
+    "AA",
+    "AB",
+    "AC",
+    "BA",
+    "BB",
+    "BC",
+    "CA",
+    "CLEAN"
+  ],
+  "families": [
+    "A",
+    "B",
+    "C"
+  ],
+  "created_at": "2026-07-18T03:57:11Z",
+  "n_train_windows": 12545,
+  "targets": {
+    "subtype_macro_f1": 0.8,
+    "family_macro_f1": 0.9,
+    "clean_recall": 0.95
+  }
+}

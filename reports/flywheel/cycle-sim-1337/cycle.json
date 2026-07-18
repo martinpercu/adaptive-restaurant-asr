@@ -1,0 +1,30 @@
+{
+  "cycle_id": "cycle-sim-1337",
+  "created_at": "2026-07-18T16:55:25Z",
+  "harvest": {
+    "n": 65
+  },
+  "judge": {
+    "training": 15,
+    "training+miner": 47,
+    "review": 0
+  },
+  "mined_candidates": [
+    "mined-cycle-sim-1337-000"
+  ],
+  "noise_flags": [
+    {
+      "store": "store-A",
+      "subtype": "CB",
+      "share": 0.6
+    }
+  ],
+  "retrain": {
+    "triggered": true,
+    "pool_hours": 6.0
+  },
+  "promotion": {
+    "decision": "promoted",
+    "reasons": []
+  }
+}

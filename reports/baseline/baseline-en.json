@@ -1,0 +1,29 @@
+{
+  "lang": "en",
+  "model_version": "0.1.0",
+  "base_model": "whisper-small",
+  "compute_type": "int8",
+  "created_at": "2026-07-17T21:24:37Z",
+  "eval_clean": {
+    "run_id": "run-20260717T211306Z-0.1.0",
+    "dataset_id": "eval-clean-en-v1",
+    "wer": 0.029,
+    "cer": 0.01,
+    "ker": null,
+    "hallucination_rate": 0.0,
+    "n_utts": 266,
+    "n_keywords": 0,
+    "avg_logprob_mean": -0.235
+  },
+  "tts": {
+    "run_id": "run-20260717T212437Z-0.1.0",
+    "dataset_id": "tts-en-v1",
+    "wer": 0.019,
+    "cer": 0.009,
+    "ker": 0.036,
+    "hallucination_rate": 0.0,
+    "n_utts": 450,
+    "n_keywords": 588,
+    "avg_logprob_mean": -0.358
+  }
+}

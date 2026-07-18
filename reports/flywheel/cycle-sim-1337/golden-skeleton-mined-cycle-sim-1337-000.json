@@ -1,0 +1,18 @@
+[
+  {
+    "rule_id": "PENDING",
+    "input": "quiero una silueta",
+    "expected": "PENDING",
+    "mode": "log_only",
+    "fires": true,
+    "_note": "positive from real context"
+  },
+  {
+    "rule_id": "PENDING",
+    "input": "TODO legit use of 'silueta'",
+    "expected": "TODO same",
+    "mode": "log_only",
+    "fires": false,
+    "_note": "negative \u2014 human must complete"
+  }
+]

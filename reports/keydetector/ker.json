@@ -1,0 +1,14 @@
+{
+  "es": {
+    "ker_off": 0.6923,
+    "ker_on": 0.6703,
+    "ker_rel_improvement": 0.0317,
+    "n": 60
+  },
+  "en": {
+    "ker_off": 0.2921,
+    "ker_on": 0.2809,
+    "ker_rel_improvement": 0.0385,
+    "n": 60
+  }
+}
