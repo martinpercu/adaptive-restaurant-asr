@@ -7,6 +7,7 @@ not been run.
 
 from __future__ import annotations
 
+import math
 import subprocess
 
 import pandas as pd
@@ -61,11 +62,18 @@ def test_dataset_manifests_valid(repo_root):
     for manifest in manifests:
         df = pd.read_parquet(manifest)
         assert len(df) > 0, f"empty manifest: {manifest}"
+        if "utterance_id" not in df.columns:
+            continue  # noise-bank manifest is NoiseBankRow — validated by the phase-2 gate
         # utterance_ids must be unique within a manifest (per-source seq collisions
         # scramble downstream text/audio pairing — guards the fix in DECISIONS).
         ids = df["utterance_id"].tolist()
         assert len(ids) == len(set(ids)), f"duplicate utterance_ids in {manifest}"
         for rec in df.to_dict(orient="records"):
+            # parquet stores SQL-null as NaN in numeric columns; normalize to None so the
+            # optional int/float contract fields validate (NaN is the logical null here).
+            rec = {
+                k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in rec.items()
+            }
             kw = rec.get("keywords")
             rec["keywords"] = list(kw) if kw is not None else []
             row = DatasetManifestRow.model_validate(rec)

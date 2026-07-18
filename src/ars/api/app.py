@@ -34,6 +34,35 @@ from ars.vad import SileroVad
 
 SR = 16000
 _RECENT: deque[dict] = deque(maxlen=500)
+_RATE: dict[str, deque] = {}
+
+
+def _check_auth(request: Request, settings: Settings) -> str | None:
+    """Bearer-token auth: no token -> 401, bad token -> 403. Returns the store_id."""
+    if not settings.security.auth_enabled:
+        return None
+    header = request.headers.get("authorization", "")
+    if not header.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    token = header[7:].strip()
+    for store_id, tok in settings.security.tokens.items():
+        if tok == token:
+            return store_id
+    raise HTTPException(status_code=403, detail="invalid token")
+
+
+def _check_rate(store_id: str | None, settings: Settings) -> None:
+    """Per-store rate limit (never global — one broken kiosk must not starve the fleet)."""
+    import time  # noqa: PLC0415
+
+    key = store_id or "_anon"
+    now = time.time()
+    q = _RATE.setdefault(key, deque())
+    while q and q[0] < now - 60:
+        q.popleft()
+    if len(q) >= settings.security.rate_limit_per_min:
+        raise HTTPException(status_code=429, detail="rate limit exceeded")
+    q.append(now)
 
 
 def _base_model_to_size(base_model: str, fallback: str) -> str:
@@ -99,11 +128,17 @@ async def _extract(request: Request) -> tuple[bytes, str | None, dict[str, Any]]
 
 @app.post("/v1/transcribe", response_model=FinalTranscript)
 async def transcribe(
-    request: Request, pipeline: Pipeline = Depends(get_pipeline)
+    request: Request,
+    pipeline: Pipeline = Depends(get_pipeline),
+    settings: Settings = Depends(get_settings),
 ) -> FinalTranscript:
+    auth_store = _check_auth(request, settings)
+    _check_rate(auth_store, settings)
     data, store_id, meta = await _extract(request)
     audio = _read_wav(data)
-    result = pipeline.transcribe(audio, SR, store_id=store_id, meta=meta)
+    if len(audio) / SR > settings.security.max_upload_s:
+        raise HTTPException(status_code=413, detail="audio exceeds max upload duration")
+    result = pipeline.transcribe(audio, SR, store_id=auth_store or store_id, meta=meta)
     _RECENT.append(
         {
             "total_ms": result.trace.latency_ms.total,

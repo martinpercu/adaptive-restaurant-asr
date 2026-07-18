@@ -51,18 +51,20 @@ def build_corpus(settings: Settings, generic_per_lang: int = 50) -> Path:
         kw = tts[tts["keywords"].map(lambda k: k is not None and len(k) > 0)].head(120)
         for r in kw.to_dict("records"):
             uid = f"rk-{lang}-{r['utterance_id']}"
+            src = data / "datasets" / f"tts-{lang}-v1" / r["path"]
             dst = out / "audio" / f"{uid}.wav"
             if not dst.exists():
-                os.link(data / "datasets" / f"tts-{lang}-v1" / r["path"], dst)
-            rows.append({**_row(uid, lang, r["text"], r["keywords"], "keyword")})
+                os.link(src, dst)
+            rows.append(_row(uid, lang, r["text"], r["keywords"], "keyword", src))
         gen = pd.read_parquet(data / "datasets" / f"eval-clean-{lang}-v1" / "manifest.parquet")
         gen = gen.head(generic_per_lang)
         for r in gen.to_dict("records"):
             uid = f"rg-{lang}-{r['utterance_id']}"
+            src = data / "datasets" / f"eval-clean-{lang}-v1" / r["path"]
             dst = out / "audio" / f"{uid}.wav"
             if not dst.exists():
-                os.link(data / "datasets" / f"eval-clean-{lang}-v1" / r["path"], dst)
-            rows.append({**_row(uid, lang, r["text"], [], "generic")})
+                os.link(src, dst)
+            rows.append(_row(uid, lang, r["text"], [], "generic", src))
     df = pd.DataFrame(rows)
     df.to_parquet(out / "manifest.parquet", index=False)
     (out / "dataset.json").write_text(
@@ -72,12 +74,14 @@ def build_corpus(settings: Settings, generic_per_lang: int = 50) -> Path:
     return out
 
 
-def _row(uid, lang, text, keywords, part):
+def _row(uid, lang, text, keywords, part, src_audio):
     return {
         "utterance_id": uid,
         "path": f"audio/{uid}.wav",
         "lang": lang,
         "text": text,
+        "duration_s": round(sf.info(str(src_audio)).duration, 3),
+        "source": "regression",
         "part": part,
         "keywords": list(keywords) if keywords is not None else [],
     }

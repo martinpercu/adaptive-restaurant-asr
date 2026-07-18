@@ -132,6 +132,23 @@ class StorageCfg(_Section):
     backend: str = "local"  # local | s3
 
 
+class SecurityCfg(_Section):
+    auth_enabled: bool = True
+    tokens: dict[str, str] = {}  # store_id -> bearer token
+    rate_limit_per_min: int = 120
+    max_upload_s: float = 60.0
+    scrub_logs: bool = True  # never log full transcripts at INFO unless off (debug only)
+
+
+class OpsCfg(_Section):
+    retention_days: int = 90
+    webhook_url: str = ""
+    psi_input_drift: float = 0.2
+    noise_share_multiplier: float = 2.0
+    rule_storm_multiplier: float = 3.0
+    judge_quality_max: float = 0.15  # wrong+hallucination share alarm
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="ARS_",
@@ -151,6 +168,8 @@ class Settings(BaseSettings):
     eval: EvalCfg = EvalCfg()
     ingest: IngestCfg = IngestCfg()
     storage: StorageCfg = StorageCfg()
+    security: SecurityCfg = SecurityCfg()
+    ops: OpsCfg = OpsCfg()
 
     @classmethod
     def settings_customise_sources(

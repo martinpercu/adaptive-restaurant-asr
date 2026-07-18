@@ -31,7 +31,12 @@ def _wav_bytes(audio: np.ndarray, sr: int = SR) -> bytes:
 
 
 def _client_with(pipeline: Pipeline) -> TestClient:
+    from ars.api.app import get_settings
+
+    s = Settings.load()
+    s.security.auth_enabled = False  # phase-1 API contract tests predate phase-7 auth
     app.dependency_overrides[get_pipeline] = lambda: pipeline
+    app.dependency_overrides[get_settings] = lambda: s
     return TestClient(app)
 
 

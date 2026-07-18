@@ -71,6 +71,8 @@ def build(settings: Settings, per_lang: int = 60, seed: int = 1337) -> list[Path
                     "path": f"audio/{uid}.wav",
                     "lang": lang,
                     "text": r["text"],
+                    "duration_s": round(len(res.mixed) / SR, 3),
+                    "source": "eval-confusion",
                     "noise_subtype": clip["subtype"],
                     "noise_level": level,
                     "keywords": list(r["keywords"]),

@@ -91,3 +91,18 @@ ingest:
 storage:
   backend: local              # local | s3
   # s3_* fields come from env (ARS_S3_ENDPOINT etc.); unset -> local
+
+security:
+  auth_enabled: true
+  tokens: {}                  # store_id -> bearer token (set per deployment via env/secret)
+  rate_limit_per_min: 120     # per store, never global (one broken kiosk must not starve fleet)
+  max_upload_s: 60.0
+  scrub_logs: true            # never log full transcripts at INFO (debug envs only: false)
+
+ops:
+  retention_days: 90          # raw audio soft-deleted after this; transcripts/metrics kept
+  webhook_url: ""             # optional alert sink (no vendor lock)
+  psi_input_drift: 0.2
+  noise_share_multiplier: 2.0
+  rule_storm_multiplier: 3.0
+  judge_quality_max: 0.15
