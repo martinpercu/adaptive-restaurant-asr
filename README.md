@@ -225,3 +225,15 @@ python -m ars.flywheel.simulate --seed 1337                 # a full flywheel cy
 | **Keydetector** | The axis-3 deterministic post-ASR corrector (lexicon + confusion rules) |
 | **Golden test** | Committed input→output pair (positive + negative) mandatory for every confusion rule |
 | **Shadow deploy** | Candidate model run in parallel on live traffic, output logged but not returned |
+
+---
+
+## 👤 Author
+
+**Martín E. Méndez** — designed and built end-to-end.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Martín_E._Méndez-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/martin-e-mendez-3a43b564/)
+
+If you're reviewing this for a role: the fastest read on how I think is
+**[BUILD-REPORT.md](BUILD-REPORT.md)** — the bugs I found, the gates I refused to
+weaken, and every environment trade-off called out in the open.
