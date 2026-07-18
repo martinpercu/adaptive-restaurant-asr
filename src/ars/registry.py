@@ -74,6 +74,37 @@ class ModelRegistry(BaseModel):
         if sum(e.stage == "shadow" for e in self.entries) > 1:
             raise ValueError("more than one shadow entry")
 
+    def promote(self, version: str, promoted_by: str = "manual") -> None:
+        """Atomic blue-green: demote current production -> retired, promote `version`."""
+        target = self.get(version)
+        if target is None:
+            raise ValueError(f"unknown version: {version}")
+        for e in self.entries:
+            if e.stage == "production":
+                e.stage = "retired"
+        target.stage = "production"
+        target.promoted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        target.promoted_by = promoted_by
+        self._check_invariants()
+
+    def rollback(self) -> RegistryEntry:
+        """Restore the previous production (highest-version retired entry). One command."""
+        retired = sorted(
+            (e for e in self.entries if e.stage == "retired"),
+            key=lambda e: e.version,
+            reverse=True,
+        )
+        if not retired:
+            raise ValueError("no retired entry to roll back to")
+        for e in self.entries:
+            if e.stage == "production":
+                e.stage = "retired"
+        retired[0].stage = "production"
+        retired[0].promoted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        retired[0].promoted_by = "rollback"
+        self._check_invariants()
+        return retired[0]
+
 
 def init_baseline(
     path: str | Path = "models/registry.json",
@@ -98,3 +129,35 @@ def init_baseline(
     reg.add(entry)
     reg.save(path)
     return entry
+
+
+def _main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    p = argparse.ArgumentParser(prog="ars.registry", description="model registry")
+    p.add_argument("command", choices=["init", "list", "promote", "rollback"])
+    p.add_argument("version", nargs="?", default=None)
+    p.add_argument("--path", default="models/registry.json")
+    args = p.parse_args(argv)
+
+    if args.command == "init":
+        e = init_baseline(args.path)
+        print(f"baseline {e.version} ({e.stage})")
+        return 0
+    reg = ModelRegistry.load(args.path)
+    if args.command == "list":
+        for e in reg.entries:
+            print(f"  {e.version:8s} {e.stage:11s} base={e.base_model} adapter={e.adapter}")
+    elif args.command == "promote":
+        reg.promote(args.version)
+        reg.save(args.path)
+        print(f"promoted {args.version} -> production")
+    elif args.command == "rollback":
+        e = reg.rollback()
+        reg.save(args.path)
+        print(f"rolled back to {e.version} -> production")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
