@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Stage = Literal["production", "shadow", "candidate", "retired"]
+Stage = Literal["production", "shadow", "candidate", "previous", "retired"]
 
 
 class RegistryEntry(BaseModel):
@@ -75,35 +75,35 @@ class ModelRegistry(BaseModel):
             raise ValueError("more than one shadow entry")
 
     def promote(self, version: str, promoted_by: str = "manual") -> None:
-        """Atomic blue-green: demote current production -> retired, promote `version`."""
+        """Atomic blue-green: current production -> `previous`, `version` -> production.
+        Any older `previous` is retired so exactly one rollback target remains."""
         target = self.get(version)
         if target is None:
             raise ValueError(f"unknown version: {version}")
         for e in self.entries:
-            if e.stage == "production":
+            if e.stage == "previous":
                 e.stage = "retired"
+        for e in self.entries:
+            if e.stage == "production":
+                e.stage = "previous"
         target.stage = "production"
         target.promoted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         target.promoted_by = promoted_by
         self._check_invariants()
 
     def rollback(self) -> RegistryEntry:
-        """Restore the previous production (highest-version retired entry). One command."""
-        retired = sorted(
-            (e for e in self.entries if e.stage == "retired"),
-            key=lambda e: e.version,
-            reverse=True,
-        )
-        if not retired:
-            raise ValueError("no retired entry to roll back to")
+        """One command: restore the `previous` entry to production (current -> previous)."""
+        prev = next((e for e in self.entries if e.stage == "previous"), None)
+        if prev is None:
+            raise ValueError("no `previous` entry to roll back to")
         for e in self.entries:
             if e.stage == "production":
-                e.stage = "retired"
-        retired[0].stage = "production"
-        retired[0].promoted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-        retired[0].promoted_by = "rollback"
+                e.stage = "previous"
+        prev.stage = "production"
+        prev.promoted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        prev.promoted_by = "rollback"
         self._check_invariants()
-        return retired[0]
+        return prev
 
 
 def init_baseline(

@@ -44,7 +44,9 @@ def build(settings: Settings, per_lang: int = 60, seed: int = 1337) -> list[Path
         targets = {c["target"] for c in confusion[lang]}
         tts = pd.read_parquet(data / "datasets" / f"tts-{lang}-v1" / "manifest.parquet")
         # utterances whose keywords include a confusion target
-        mask = tts["keywords"].map(lambda ks: bool(set(ks) & targets) if ks is not None else False)
+        mask = tts["keywords"].map(
+            lambda ks, t=targets: bool(set(ks) & t) if ks is not None else False
+        )
         pool = tts[mask].head(per_lang).to_dict("records")
         out = data / "datasets" / f"eval-confusion-{lang}-v1"
         (out / "audio").mkdir(parents=True, exist_ok=True)

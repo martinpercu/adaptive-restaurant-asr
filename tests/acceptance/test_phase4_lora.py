@@ -110,7 +110,7 @@ def test_registry_promote_and_rollback(tmp_path):
     reg.add(RegistryEntry(version="0.2.0", stage="candidate", base_model="whisper-small"))
     reg.promote("0.2.0")
     assert reg.production().version == "0.2.0"
-    assert reg.get("0.1.0").stage == "retired"
+    assert reg.get("0.1.0").stage == "previous"  # blue-green rollback target
     reg.rollback()
     assert reg.production().version == "0.1.0"
 

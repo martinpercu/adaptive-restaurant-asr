@@ -37,6 +37,13 @@ CREATE TABLE IF NOT EXISTS metric_runs (
     run_id TEXT PRIMARY KEY, model_version TEXT, dataset_id TEXT,
     metrics_json TEXT, created_at TEXT
 );
+CREATE TABLE IF NOT EXISTS pos_tickets (
+    order_id TEXT PRIMARY KEY, store_id TEXT, items_json TEXT, created_at TEXT
+);
+CREATE TABLE IF NOT EXISTS cycle_state (
+    cycle_id TEXT, step TEXT, data_json TEXT, created_at TEXT,
+    PRIMARY KEY (cycle_id, step)
+);
 """
 
 
@@ -108,6 +115,29 @@ def insert_transcription(
     )
     conn.commit()
     return int(cur.lastrowid)
+
+
+def save_cycle_step(conn, cycle_id: str, step: str, data: dict) -> None:
+    conn.execute(
+        "INSERT OR REPLACE INTO cycle_state VALUES (?,?,?,?)",
+        (cycle_id, step, json.dumps(data, ensure_ascii=False), _now()),
+    )
+    conn.commit()
+
+
+def load_cycle_step(conn, cycle_id: str, step: str) -> dict | None:
+    row = conn.execute(
+        "SELECT data_json FROM cycle_state WHERE cycle_id=? AND step=?", (cycle_id, step)
+    ).fetchone()
+    return json.loads(row[0]) if row else None
+
+
+def insert_pos_ticket(conn, order_id: str, store_id: str, items: list[str]) -> None:
+    conn.execute(
+        "INSERT OR REPLACE INTO pos_tickets VALUES (?,?,?,?)",
+        (order_id, store_id, json.dumps(items, ensure_ascii=False), _now()),
+    )
+    conn.commit()
 
 
 def insert_metric_run(
