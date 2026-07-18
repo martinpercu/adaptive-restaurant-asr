@@ -14,6 +14,24 @@
       "sensitivity_run": null,
       "promoted_at": "2026-07-17T19:49:04Z",
       "promoted_by": "phase1-baseline"
+    },
+    {
+      "version": "0.2.0",
+      "stage": "candidate",
+      "base_model": "whisper-tiny",
+      "adapter": "lora-2026w29",
+      "ct2_path": "models/ct2/0.2.0",
+      "languages": [
+        "es",
+        "en"
+      ],
+      "gates": {
+        "parity_wer_diff": 0.134,
+        "note": "CPU smoke (whisper-tiny); real candidate needs GPU whisper-small training"
+      },
+      "sensitivity_run": null,
+      "promoted_at": null,
+      "promoted_by": "phase4-smoke"
     }
   ]
 }

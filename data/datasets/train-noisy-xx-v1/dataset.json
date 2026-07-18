@@ -1,0 +1,27 @@
+{
+  "dataset_id": "train-noisy-xx-v1",
+  "created_at": "2026-07-18T04:51:40Z",
+  "generator": "ars.training.dataset_builder",
+  "generator_version": "0.1.0",
+  "config_hash": "f31743f7c068",
+  "seed": 1337,
+  "row_count": 224,
+  "langs": [
+    "en",
+    "es"
+  ],
+  "size_hours": 0.3,
+  "clean_frac": 0.3,
+  "temperature": 0.5,
+  "residual_boost": 1.5,
+  "residual": [
+    "AA",
+    "AB",
+    "AC",
+    "BA",
+    "BB",
+    "BC",
+    "CA"
+  ],
+  "ndi_file": "reports/sensitivity/run-20260718T010058Z-0.1.0/ndi.json"
+}

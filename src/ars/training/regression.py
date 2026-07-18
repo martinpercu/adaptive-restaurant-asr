@@ -79,7 +79,7 @@ def _row(uid, lang, text, keywords, part):
         "lang": lang,
         "text": text,
         "part": part,
-        "keywords": list(keywords or []),
+        "keywords": list(keywords) if keywords is not None else [],
     }
 
 
@@ -96,11 +96,8 @@ def run_regression(engine, settings: Settings, corpus_dir: str | Path) -> dict:
             raw = engine.transcribe(audio.mean(axis=1), SR, language=lang)
             guarded = apply_guard(raw, None, settings.asr.guard)
             if r["part"] == "keyword":
-                kw_records.append(
-                    UttRecord(
-                        ref=r["text"], hyp=guarded.text, lang=lang, keywords=list(r["keywords"])
-                    )
-                )
+                kws = list(r["keywords"]) if r["keywords"] is not None else []
+                kw_records.append(UttRecord(ref=r["text"], hyp=guarded.text, lang=lang, keywords=kws))
             else:
                 gen_refs.append(r["text"])
                 gen_hyps.append(guarded.text)

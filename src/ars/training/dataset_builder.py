@@ -65,6 +65,11 @@ def _load(path: Path) -> np.ndarray:
     return a.mean(axis=1).astype(np.float32)
 
 
+def _kw(v) -> list:
+    """Coerce a keywords cell (may be a numpy array from parquet) to a list."""
+    return list(v) if v is not None else []
+
+
 def _config_hash(payload: dict) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:12]
 
@@ -120,7 +125,7 @@ def _mix_row(clean_audio, clean_row, subtype, snr, noise_path, s_rms, seed, out_
         "snr_db_target": round(snr, 2),
         "snr_db_achieved": round(res.achieved_snr_db, 3),
         "mix_seed": seed,
-        "keywords": list(clean_row.get("keywords") or []),
+        "keywords": _kw(clean_row.get("keywords")),
     }
 
 
@@ -191,7 +196,7 @@ def build_train(
                     "snr_db_target": None,
                     "snr_db_achieved": None,
                     "mix_seed": None,
-                    "keywords": list(crow.get("keywords") or []),
+                    "keywords": _kw(crow.get("keywords")),
                 }
             )
         else:
@@ -288,7 +293,7 @@ def build_eval_noisy(settings, per_cell=40, seed=1337):
                             "snr_db_target": round(snr, 2),
                             "snr_db_achieved": round(res.achieved_snr_db, 3),
                             "mix_seed": None,
-                            "keywords": list(crow["keywords"]),
+                            "keywords": _kw(crow["keywords"]),
                         }
                     )
         _write(
@@ -320,7 +325,7 @@ def _eval_clean_pool(settings, lang, need):
                 "text": r["text"],
                 "audio": audio,
                 "s_rms": s_rms,
-                "keywords": r.get("keywords") or [],
+                "keywords": _kw(r.get("keywords")),
             }
         )
     return pool
