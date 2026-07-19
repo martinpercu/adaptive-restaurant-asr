@@ -155,6 +155,18 @@ and reinterpreted, a 7-vs-8 subtype grid the plan itself anticipated…). **[See
 
 ---
 
+> ## 🧭 And the thinking *past* this build?
+>
+> This repo fights noise **after** the microphone and measures success in WER. The next
+> frontier is everything around that: the acoustic front-end (mic arrays, per-site noise
+> fingerprints, sub-10 ms DSP), the **ASR→NLU handoff**, and metrics that track **user
+> friction** — not just transcription. Those reflections, each anchored to something this
+> build actually measured, live in one page:
+>
+> ### 👉 **[Read Beyond the Build →](docs/BEYOND-THE-BUILD.md)**
+
+---
+
 ## 🏗️ Architecture at a glance
 
 ```
@@ -209,6 +221,7 @@ python -m ars.flywheel.simulate --seed 1337                 # a full flywheel cy
 | [plan/02-architecture.md](plan/02-architecture.md) | module contracts, request/response schemas, storage |
 | [plan/03-data-spec.md](plan/03-data-spec.md) | manifest / metrics / rule / registry / judge schemas |
 | [plan/DECISIONS.md](plan/DECISIONS.md) | every ambiguity resolved + every environment deferral |
+| [docs/BEYOND-THE-BUILD.md](docs/BEYOND-THE-BUILD.md) | design reflections: ASR→NLU, friction metrics, the acoustic front-end |
 | [docs/RUNBOOKS.md](docs/RUNBOOKS.md) · [docs/FIELD-RECORDING-PROTOCOL.md](docs/FIELD-RECORDING-PROTOCOL.md) | ops procedures + real-audio onboarding |
 | [reports/](reports/) | committed evidence: NDI heatmaps, ANALYSIS, EFFECTIVENESS, KER, CYCLE, dashboard |
 
@@ -234,6 +247,6 @@ python -m ars.flywheel.simulate --seed 1337                 # a full flywheel cy
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Martín_E._Méndez-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/martin-e-mendez-3a43b564/)
 
-If you're reviewing this for a role: the fastest read on how I think is
+Fastest read on how I think is
 **[BUILD-REPORT.md](BUILD-REPORT.md)** — the bugs I found, the gates I refused to
 weaken, and every environment trade-off called out in the open.

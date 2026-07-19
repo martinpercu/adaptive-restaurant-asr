@@ -1,4 +1,7 @@
 # --- ARS gitignore ---
+# Private notes — never commit
+INTERVIEW-PREP.md
+
 # Secrets
 .env
 .env.*
@@ -55,3 +58,6 @@ htmlcov/
 *.swp
 .idea/
 .vscode/
+
+
+github-user-readme.md
